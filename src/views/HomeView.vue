@@ -55,7 +55,7 @@ async function search() {
   error.value = ''
 
   try {
-    const response = await fetch(`http://localhost:3123/?key=${searchTerm.value}`)
+    const response = await fetch(`https://ceebi.wupp.dev/api/?key=${searchTerm.value}`)
     if (response.status === 404) {
       results.value = []
     } else {
