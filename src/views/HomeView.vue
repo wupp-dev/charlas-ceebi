@@ -4,8 +4,8 @@
       <TopNav/>
     </header>
     <section class="flex flex-grow">
-      <div class="flex flex-col items-center justify-center max-w-screen-md mx-auto">
-        <div class="flex mb-5">
+      <div class="flex flex-col items-center md:justify-center max-w-screen-md mx-auto">
+        <div class="flex my-10">
           <form @submit.prevent="search" class="flex items-center">
             <input
               v-model="searchTerm"
@@ -21,11 +21,11 @@
             </button>
           </form>
         </div>
-        <div class="flex mt-5">
-          <div v-if="loading" class="mt-4 text-gray-500">Buscando...</div>
-          <div v-else-if="error" class="mt-4 text-red-500">{{ error }}</div>
-          <div v-else-if="searched && !results.id" class="mt-4 text-gray-500">No se ha encontrado ningún resultado.</div>
-          <div v-else-if="results.id" class="mt-4">
+        <div class="flex">
+          <div v-if="loading" class=" text-gray-500">Buscando...</div>
+          <div v-else-if="error" class=" text-red-500">{{ error }}</div>
+          <div v-else-if="searched && !results.id" class=" text-gray-500">No se ha encontrado ningún resultado.</div>
+          <div v-else-if="results.id">
             <table class="table-auto border-collapse border border-gray-500 rounded p-4 mb-4 text-center">
               <tr class="hover:bg-gray-100">
                 <th class="border border-gray-500 p-2">Turno 1</th>
