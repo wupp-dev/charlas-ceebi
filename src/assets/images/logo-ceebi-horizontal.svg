@@ -8,8 +8,8 @@
    y="0px"
    viewBox="0 0 3000 1000"
    xml:space="preserve"
-   sodipodi:docname="Logo CEEBI horizontal.svg"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="logo-ceebi-horizontal.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    width="3000"
    height="1000"
    inkscape:export-filename="/home/jesusjmma/Documentos/Logos/CEEBI/Logo CEEBI horizontal sin fondo.png"
@@ -41,19 +41,20 @@
    inkscape:pagecheckerboard="0"
    showgrid="false"
    inkscape:zoom="0.38803312"
-   inkscape:cx="1074.6505"
-   inkscape:cy="789.88103"
+   inkscape:cx="1059.1879"
+   inkscape:cy="792.45813"
    inkscape:window-width="1920"
-   inkscape:window-height="1006"
+   inkscape:window-height="934"
    inkscape:window-x="0"
-   inkscape:window-y="0"
+   inkscape:window-y="44"
    inkscape:window-maximized="1"
    inkscape:current-layer="Capa_1"
    borderlayer="true"
    inkscape:showpageshadow="false"
    showguides="true"
    inkscape:guide-bbox="true"
-   inkscape:lockguides="true" />
+   inkscape:lockguides="true"
+   inkscape:deskcolor="#d1d1d1" />
 <style
    type="text/css"
    id="style2">
@@ -64,15 +65,15 @@
 
 <circle
    class="st0"
-   cx="177.60001"
-   cy="164.60001"
+   cx="177.60004"
+   cy="164.59998"
    r="151.5"
    id="circle28" />
 
 <g
    id="g38349-5"
    style="fill:#70c1b3;fill-opacity:1"
-   transform="matrix(1.4759651,0,0,1.5868222,-396.84837,-303.62819)"><path
+   transform="matrix(1.4761016,0,0,1.5868222,-396.88503,-303.62822)"><path
      d="m 500.30443,584.03181 c 6.69717,-2.73974 10.35017,-10.04575 8.21925,-16.74292 -27.39751,-81.58369 -123.28879,-83.71461 -123.28879,-83.71461 0,0 -7.61041,-7.91483 23.13567,59.36127 17.35176,38.0521 48.09786,45.66252 71.84237,44.44485 l -22.83126,-41.09626 c -0.60884,0.30441 26.48426,19.48267 42.92276,37.74767 z"
      id="path4-6"
      sodipodi:nodetypes="ccccccc"
@@ -90,7 +91,7 @@
      style="fill:#70c1b3;fill-opacity:1;stroke-width:1" /></g><g
    id="g38343-2"
    style="fill:#34b6ed;fill-opacity:1"
-   transform="matrix(1.4686891,0,0,1.5095787,-393.21217,-254.78932)"><path
+   transform="matrix(1.4688249,0,0,1.5095787,-393.24849,-254.78935)"><path
      d="m 443.68291,333.1924 h 12.78551 v -6.69717 h -12.78551 c -4.56625,0 -8.21925,-3.653 -8.21925,-8.21926 v 22.83126 c 0.30441,-4.26183 3.95742,-7.91483 8.21925,-7.91483 z"
      id="path14-7"
      style="fill:#34b6ed;fill-opacity:1;stroke-width:1" /><path
@@ -111,22 +112,24 @@
      id="path24-0"
      style="fill:#34b6ed;fill-opacity:1;stroke-width:1" /></g><text
    xml:space="preserve"
-   style="font-size:94.0133px;line-height:1.25;font-family:sans-serif;fill:#24272a;fill-opacity:1;stroke-width:1.0603"
-   x="848.32196"
-   y="868.58868"
-   id="text2648-6"><tspan
+   style="font-size:94.0176px;line-height:1.25;font-family:sans-serif;fill:#24272a;fill-opacity:1;stroke-width:1.06035"
+   x="848.36127"
+   y="868.62885"
+   id="text2648-6"
+   transform="scale(1.0000462,0.99995377)"><tspan
      sodipodi:role="line"
      id="tspan2646-2"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Source Sans Pro';-inkscape-font-specification:'Source Sans Pro';fill:#24272a;fill-opacity:1;stroke-width:1.0603"
-     x="848.32196"
-     y="868.58868">CONGRESO ESTATAL DE ESTUDIANTES DE BIOCIENCIAS</tspan></text><text
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Source Sans Pro';-inkscape-font-specification:'Source Sans Pro';fill:#24272a;fill-opacity:1;stroke-width:1.06035"
+     x="848.36127"
+     y="868.62885">CONGRESO ESTATAL DE ESTUDIANTES DE BIOCIENCIAS</tspan></text><text
    xml:space="preserve"
-   style="font-size:874.699px;line-height:1.25;font-family:sans-serif;fill:#24272a;fill-opacity:1;stroke-width:4.55572"
-   x="794.88757"
-   y="710.21344"
-   id="text2648-3-6"><tspan
+   style="font-size:874.739px;line-height:1.25;font-family:sans-serif;fill:#24272a;fill-opacity:1;stroke-width:4.55593"
+   x="794.92438"
+   y="710.24628"
+   id="text2648-3-6"
+   transform="scale(1.0000462,0.99995377)"><tspan
      sodipodi:role="line"
      id="tspan2646-6-1"
-     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:874.699px;font-family:'Source Sans Pro';-inkscape-font-specification:'Source Sans Pro Bold';fill:#24272a;fill-opacity:1;stroke-width:4.55572"
-     x="794.88757"
-     y="710.21344">CEEBI</tspan></text></svg>
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:874.739px;font-family:'Source Sans Pro';-inkscape-font-specification:'Source Sans Pro Bold';fill:#24272a;fill-opacity:1;stroke-width:4.55593"
+     x="794.92438"
+     y="710.24628">CEEBI</tspan></text></svg>

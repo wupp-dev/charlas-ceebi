@@ -1,43 +1,51 @@
 <template>
-  <TopNav/>
-  <div class="flex flex-col items-center justify-center h-screen max-w-screen-md mx-auto">
-    <div class="flex">
-      <form @submit.prevent="search" class="flex items-center">
-        <input
-          v-model="searchTerm"
-          type="text"
-          class="border border-gray-300 rounded-l px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Correo o NIF"
-        />
-        <button
-          type="submit"
-          class="bg-blue-500 hover:bg-blue-600 text-white rounded-r px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Buscar
-        </button>
-      </form>
-    </div>
-    <div class="flex">
-      <div v-if="loading" class="mt-4 text-gray-500">Buscando...</div>
-      <div v-else-if="error" class="mt-4 text-red-500">{{ error }}</div>
-      <div v-else-if="searched && !results.id" class="mt-4 text-gray-500">No se ha encontrado ningún resultado.</div>
-      <div v-else-if="results.id" class="mt-4">
-        <table class="table-auto border-collapse border border-gray-500 rounded p-4 mb-4 text-center">
-          <tr class="hover:bg-gray-100">
-            <th class="border border-gray-500 p-2">Turno 1</th>
-            <td class="border border-gray-500 p-2">{{ results.t1 }}</td>
-          </tr>
-          <tr class="hover:bg-gray-100">
-            <th class="border border-gray-500 p-2">Turno 2</th>
-            <td class="border border-gray-500 p-2">{{ results.t2 }}</td>
-          </tr>
-          <tr class="hover:bg-gray-100">
-            <th class="border border-gray-500 p-2">Turno 3</th>
-            <td class="border border-gray-500 p-2">{{ results.t3 }}</td>
-          </tr>
-        </table>
+  <div class="min-h-screen flex flex-col">
+    <header>
+      <TopNav/>
+    </header>
+    <section class="flex flex-grow">
+      <div class="flex flex-col items-center justify-center max-w-screen-md mx-auto">
+        <div class="flex mb-5">
+          <form @submit.prevent="search" class="flex items-center">
+            <input
+              v-model="searchTerm"
+              type="text"
+              class="border border-gray-300 rounded-l px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Correo o NIF"
+            />
+            <button
+              type="submit"
+              class="bg-blue-500 hover:bg-blue-600 text-white rounded-r px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Buscar
+            </button>
+          </form>
+        </div>
+        <div class="flex mt-5">
+          <div v-if="loading" class="mt-4 text-gray-500">Buscando...</div>
+          <div v-else-if="error" class="mt-4 text-red-500">{{ error }}</div>
+          <div v-else-if="searched && !results.id" class="mt-4 text-gray-500">No se ha encontrado ningún resultado.</div>
+          <div v-else-if="results.id" class="mt-4">
+            <table class="table-auto border-collapse border border-gray-500 rounded p-4 mb-4 text-center">
+              <tr class="hover:bg-gray-100">
+                <th class="border border-gray-500 p-2">Turno 1</th>
+                <td class="border border-gray-500 p-2">{{ results.t1 }}</td>
+              </tr>
+              <tr class="hover:bg-gray-100">
+                <th class="border border-gray-500 p-2">Turno 2</th>
+                <td class="border border-gray-500 p-2">{{ results.t2 }}</td>
+              </tr>
+              <tr class="hover:bg-gray-100">
+                <th class="border border-gray-500 p-2">Turno 3</th>
+                <td class="border border-gray-500 p-2">{{ results.t3 }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
+    <footer>
+    </footer>
   </div>
 </template>
 
