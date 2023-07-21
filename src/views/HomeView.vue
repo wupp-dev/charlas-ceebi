@@ -10,12 +10,12 @@
             <input
               v-model="searchTerm"
               type="text"
-              class="border border-gray-300 rounded-l px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="border border-gray-300 rounded-l px-4 py-2 w-64 md:w-96 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Correo o NIF"
             />
             <button
               type="submit"
-              class="bg-blue-500 hover:bg-blue-600 text-white rounded-r px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="bg-blue-500 hover:bg-blue-600 text-white rounded-r px-4 py-2 md:w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Buscar
             </button>
@@ -28,8 +28,8 @@
           <div v-else-if="results.id">
             <table class="table-auto border-collapse border border-gray-500 rounded p-4 mb-4 text-center">
               <tr class="hover:bg-gray-100">
-                <th class="border border-gray-500 p-2">Turno 1</th>
-                <td class="border border-gray-500 p-2">{{ results.t1 }}</td>
+                <th class="border border-gray-500 p-2 md:w-[140px]">Turno 1</th>
+                <td class="border border-gray-500 p-2 md:w-[450px]">{{ results.t1 }}</td>
               </tr>
               <tr class="hover:bg-gray-100">
                 <th class="border border-gray-500 p-2">Turno 2</th>
