@@ -1,16 +1,38 @@
 const express = require('express');
-const app = express();
-const port = 3123;
 const csv = require('csv-parser');
 const fs = require('fs');
 const uuid = require('uuid');
+const supabs = require('@supabase/supabase-js');
 require('console-stamp')(console, { 
   format: ':date(yyyy-mm-dd HH:MM:ss)' 
 } );
+require('dotenv').config();
 
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_KEY
+console.log(`Connecting to ${supabaseUrl}...`);
+const supabase = supabs.createClient(supabaseUrl, supabaseKey)
+console.log('Connected!');
+
+function findNifMailMatch(nif, mail) {
+  let id = null;
+  fs.createReadStream('./private/users-data.csv')
+    .pipe(csv())
+    .on('data', (row) => {
+      if (row.mail.trim().toLowerCase() === mail && row.nif.trim().toUpperCase() === nif) {
+        id = row.id;
+      }
+    })
+    .on('error', (err) => { console.error(err); });
+  return id;
+}
+
+const app = express();
+const port = 3123;
 app.use(express.json());
 
-app.get('/api/ceebi-ii/consulta', (req, res) => {
+app.get('/api/ceebi-ii/consulta/turnos', (req, res) => {
+  console.log('GET /api/ceebi-ii/consulta/turnos');
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (!req.query.id) {
@@ -33,10 +55,36 @@ app.get('/api/ceebi-ii/consulta', (req, res) => {
         console.log(`Not found "${input}"!`);
         res.status(404).json({ error: 'No results found!' });
       }
+    })
+    .on('error', (err) => {
+      console.error(err);
+      res.status(500).json({ error: 'Internal server error!' });
     });
 });
 
+app.get('/api/ceebi-ii/consulta/certificado', (req, res) => {
+  console.log('GET /api/ceebi-ii/consulta/certificado');
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (!req.query.nif || !req.query.mail) {
+    console.log('No identity document or mail provided!');
+    return res.status(400).json({ error: 'Request must include an identity document and a mail!' });
+  }
+
+  const nif = req.query.nif.trim().toUpperCase();
+  const mail = req.query.mail.trim().toLowerCase();
+  const id = findNifMailMatch(nif, mail);
+  if(!id) {
+    console.log('Identity document and mail pair not found!');
+    return res.status(404).json({ error: 'Identity document and mail do not match or could not be found!' });
+  }
+
+  // Check attendance, microcourse and poster certificates
+  return res.status(503).json({ error: 'API not yet available!' });
+});
+
 app.get('/api/ceebi-ii/certificado/*', (req, res) => {
+  console.log('GET /api/ceebi-ii/certificado/*');
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   const path = req.params[0].split('/');

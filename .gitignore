@@ -29,3 +29,6 @@ coverage
 
 # Private documents folder
 private/
+
+# Environment variables
+.env

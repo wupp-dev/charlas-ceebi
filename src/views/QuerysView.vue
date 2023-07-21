@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col">
     <header>
-      <TopNav/>
+      <TopNav :title="'Consulta de talleres y microcharlas'" />
     </header>
     <section class="flex flex-grow">
       <div class="flex flex-col items-center md:justify-center max-w-screen-md mx-auto">
@@ -53,20 +53,20 @@
 import { ref } from 'vue'
 import TopNav from '@/components/TopNav.vue'
 
-interface SearchResult {
+type SearchResult = {
   id: string | null;
-  t1: string | null;
-  t2: string | null;
-  t3: string | null;
+  t1: string;
+  t2: string;
+  t3: string;
 }
 
 const searched = ref(false)
 const searchTerm = ref('')
 const results = ref<SearchResult>({
   id: null,
-  t1: null,
-  t2: null,
-  t3: null,
+  t1: '',
+  t2: '',
+  t3: '',
 });
 const loading = ref(false)
 const error = ref('')
@@ -74,6 +74,7 @@ const error = ref('')
 async function search() {
   loading.value = true
   searched.value = true
+  error.value = ''
   if (!searchTerm.value) {
     results.value.id = null
     loading.value = false
@@ -83,7 +84,7 @@ async function search() {
   error.value = ''
 
   try {
-    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/?id=${searchTerm.value}`)
+    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/turnos?id=${searchTerm.value}`)
     if (response.status === 404) {
       results.value.id = null
     } else {

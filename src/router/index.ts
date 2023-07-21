@@ -5,7 +5,15 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('../views/HomeView.vue')
+      redirect: '/certificado',
+    },
+    {
+      path: '/consulta',
+      component: () => import('@/views/QuerysView.vue'),
+    },
+    {
+      path: '/certificado',
+      component: () => import('@/views/CertView.vue'),
     },
   ]
 })
