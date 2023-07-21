@@ -83,7 +83,7 @@ async function search() {
   error.value = ''
 
   try {
-    const response = await fetch(`https://ceebi.wupp.dev/api/?key=${searchTerm.value}`)
+    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/?id=${searchTerm.value}`)
     if (response.status === 404) {
       results.value.id = null
     } else {
