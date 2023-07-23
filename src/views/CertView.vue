@@ -22,7 +22,7 @@
           </div>
           <div>
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="submit" :disabled="isSubmitting">
-              {{ isSubmitting ? 'Comprobando...' : 'Comprobar certificados disponibles' }}
+              <IconLoader2 class="m-auto animate-spin" v-if="isSubmitting" /><p v-else>Comprobar certificados disponibles</p>
             </button>
           </div>
         </form>
@@ -35,9 +35,10 @@
           </button>
           <h2 class="text-2xl font-bold flex-grow text-center">Certificados disponibles</h2>
           <button class="rounded-full p-2 ml-4 hover:shadow-lg hover:bg-gray-100" @click="reload">
-            <IconReload class="w-6 h-6" />
+            <IconReload :class="isReloading ? 'animate-spin' : ''" class="w-6 h-6" />
           </button>
         </div>
+        <p v-if="test" class="text-lg font-bold text-red-500 text-center mb-4">Esta página todavía está en construcción y no funciona correctamente</p>
         <div class="flex justify-between mb-4 border-b border-t">
           <button class="mx-2 text-lg font-bold focus:outline-none hover:text-blue-500" :class="{ 'text-blue-500': activeTab === 'asistencia' }" @click="activeTab = 'asistencia'">Asistencia</button>
           <button class="mx-2 text-lg font-bold focus:outline-none hover:text-blue-500" :class="{ 'text-blue-500': activeTab === 'microcursos' }" @click="activeTab = 'microcursos'">Microcursos</button>
@@ -45,7 +46,7 @@
         </div>
         <div v-if="activeTab === 'asistencia'">
           <p v-if="error.asistencia" v-html="error.asistencia" class="mb-2 font-bold text-red-500 text-center"></p>
-          <p class="font-bold text-gray-700 mb-2 text-center">Tu porcentaje de asistencia es del {{ Math.trunc(results.asistencia*100)/100 }}%</p>
+          <p class="font-bold text-zinc-900 mb-2 text-center">Tu porcentaje de asistencia es del {{ Math.trunc(results.asistencia*100)/100 }}%</p>
           <button :disabled="test" :class="test ? '!bg-gray-500 hover:bg-current' : ''" @click="download('asistencia')" v-if="results.asistencia >= 80.00" class="my-4 block mx-auto bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             Descargar certificado
           </button>
@@ -54,7 +55,7 @@
         <div v-else-if="activeTab === 'microcursos'">
           <p v-if="error.microcursos" v-html="error.microcursos" class="mb-2 font-bold text-red-500 text-center"></p>
           <div v-if="!results.microcursos.doble && results.microcursos.micro1">
-            <p class="font-bold text-gray-700 mb-2 text-center">Has asistido a 1/1 microcurso de dos días:</p>
+            <p class="font-bold text-zinc-900 mb-2 text-center">Has asistido a 1/1 microcurso de dos días:</p>
             <p class="font-bold text-gray-700 mb-2 text-center">{{ results.microcursos.micro1 }}</p>
             <button :disabled="test" :class="test ? '!bg-gray-500 hover:bg-current' : ''" @click="download('microcurso', results.microcursos.micro1)" class="my-4 block mx-auto bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Descargar certificado
@@ -62,7 +63,7 @@
           </div>
           <div v-else-if="results.microcursos.doble && results.microcursos.micro1 && results.microcursos.micro2">
             <div class="flex flex-col items-center justify-center">
-              <p class="font-bold text-gray-700 mb-2 text-center">Has asistido a 2/2 microcursos de un día:</p>
+              <p class="font-bold text-zinc-900 mb-2 text-center">Has asistido a 2/2 microcursos de un día:</p>
               <p class="font-bold text-gray-700 mb-2 text-center">{{ results.microcursos.micro1 }}</p>
               <IconArrowNarrowDown class="text-gray-700" />
               <button :disabled="test" :class="test ? '!bg-gray-500 hover:bg-current' : ''" @click="download('microcurso', results.microcursos.micro1)" class="mx-2 my-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -76,7 +77,7 @@
             </div>
           </div>
           <div v-else-if="results.microcursos.doble && results.microcursos.micro1">
-            <p class="font-bold text-gray-700 mb-2 text-center">Has asistido a 1/2 microcursos de un día:</p>
+            <p class="font-bold text-zinc-900 mb-2 text-center">Has asistido a 1/2 microcursos de un día:</p>
             <p class="font-bold text-gray-700 mb-2 text-center">{{ results.microcursos.micro1 }}</p>
             <button :disabled="test" :class="test ? '!bg-gray-500 hover:bg-current' : ''" @click="download('microcurso', results.microcursos.micro1)" class="my-4 block mx-auto bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Descargar certificado
@@ -89,7 +90,7 @@
         <div v-else-if="activeTab === 'poster'">
           <p v-if="error.poster" v-html="error.poster" class="mb-2 font-bold text-red-500 text-center"></p>
           <div v-if="results.poster">
-            <p class="font-bold text-gray-700 mb-2 text-center">Has presentado algún póster</p>
+            <p class="font-bold text-zinc-900 mb-2 text-center">Has presentado algún póster</p>
             <button :disabled="test" :class="test ? '!bg-gray-500 hover:bg-current' : ''" @click="download('poster')" class="my-4 block mx-auto bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Descargar certificado
             </button>
@@ -109,7 +110,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import TopNav from '@/components/TopNav.vue'
-import { IconArrowNarrowLeft, IconReload, IconArrowNarrowDown } from '@tabler/icons-vue';
+import { IconArrowNarrowLeft, IconReload, IconArrowNarrowDown, IconLoader2 } from '@tabler/icons-vue';
 
 type SearchResult = {
   id: string | null;
@@ -136,6 +137,7 @@ const results = ref<SearchResult>({
 const nif = ref('');
 const email = ref('');
 const isSubmitting = ref(false);
+const isReloading = ref(false);
 const resultsFound = ref(false);
 const firstSubmmited = ref(false);
 const test = ref(true) // True if buttons should be disabled due to testing
@@ -162,7 +164,6 @@ async function handleSubmit() {
       results.value.id = null
     } else {
       results.value = await response.json()
-      console.log(results.value)
       resultsFound.value = true;
     }
   } catch (e) {
@@ -225,8 +226,10 @@ function goBack() {
   };
 }
 
-function reload() {
-  handleSubmit();
+async function reload() {
+  isReloading.value = true;
+  await handleSubmit();
+  isReloading.value = false;
 }
 
 </script>
