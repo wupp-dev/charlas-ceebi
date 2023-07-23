@@ -145,7 +145,7 @@ const error = ref({
   'microcursos': '',
   'poster': '',
 });
-const activeTab = ref('asistencia');
+const activeTab = ref('asistencia')
 
 async function handleSubmit() {
   firstSubmmited.value = true;
@@ -157,12 +157,12 @@ async function handleSubmit() {
     'poster': '',
   };
   try {
-    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/certificado?nif=${nif}&email=${email}`)
+    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/certificado?nif=${nif.value}&email=${email.value}`)
     if (response.status === 404) {
       results.value.id = null
     } else {
-      const data = await response.json()
-      results.value = data.output;
+      results.value = await response.json()
+      console.log(results.value)
       resultsFound.value = true;
     }
   } catch (e) {
