@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen flex flex-col bg-gray-100">
     <header>
       <TopNav :title="'Consulta de talleres y microcharlas'" />
     </header>
-    <section class="flex flex-grow">
+    <main class="flex flex-grow">
       <div class="flex flex-col items-center md:justify-center max-w-screen-md mx-auto">
         <div class="flex my-10">
           <form @submit.prevent="search" class="flex items-center">
@@ -23,8 +23,8 @@
         </div>
         <div class="flex">
           <div v-if="loading" class=" text-gray-500">Buscando...</div>
-          <div v-else-if="error" class=" text-red-500">{{ error }}</div>
-          <div v-else-if="searched && !results.id" class=" text-gray-500">No se ha encontrado ningún resultado.</div>
+          <div v-else-if="error" class="font-bold text-red-500">{{ error }}</div>
+          <div v-else-if="searched && !results.id" class="text-gray-500">No se ha encontrado ningún resultado.</div>
           <div v-else-if="results.id">
             <table class="table-auto border-collapse border border-gray-500 rounded p-4 mb-4 text-center">
               <tr class="hover:bg-gray-100">
@@ -43,8 +43,11 @@
           </div>
         </div>
       </div>
-    </section>
+    </main>
     <footer>
+      <div class="flex flex-grow items-center justify-center text-center">
+        <p class="text-gray-500 text-sm mb-4">Para cualquier duda, contacta con <a class="no-underline text-blue-500 hover:text-blue-700" href="mailto:info@biociencias.es">info@biociencias.es</a></p>
+      </div>
     </footer>
   </div>
 </template>
