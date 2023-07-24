@@ -36,6 +36,7 @@ function findNifMailMatch(nif, email) {
       }
     })
     .on('error', (err) => { console.error(err); reject(err) }))
+    .on('end', () => resolve(null))
 }
 
 const app = express();
