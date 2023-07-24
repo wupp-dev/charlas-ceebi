@@ -12,13 +12,13 @@
             <label class="block text-gray-700 font-bold mb-2" for="nif">
               Documento identificativo (DNI o similar)
             </label>
-            <input class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" :class="{ 'border-red-500 shadow-outline-red focus:outline-none': firstSubmmited && !isSubmitting && error.busqueda === notFoundMsg }"  id="nif" type="text" v-model="nif" placeholder="X00000000X">
+            <input class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" :class="{ 'border-red-500 shadow-outline-red focus:outline-none': firstSubmmited && !isSubmitting && error.busqueda === notFoundMsg }"  id="nif" type="text" v-model="nif" v-maska data-maska="Z" data-maska-tokens="Z:[a-z0-9A-Z]:multiple" placeholder="X00000000X" required>
           </div>
           <div>
             <label class="block text-gray-700 font-bold mb-2" for="email">
               Correo electrónico
             </label>
-            <input class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" :class="{ 'border-red-500 shadow-outline-red focus:outline-none': firstSubmmited && !isSubmitting && error.busqueda === notFoundMsg }"  id="email" type="email" v-model="email" placeholder="ejemplo@correo.com">
+            <input class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" :class="{ 'border-red-500 shadow-outline-red focus:outline-none': firstSubmmited && !isSubmitting && error.busqueda === notFoundMsg }"  id="email" type="email" v-model="email" v-maska data-maska="Z" data-maska-tokens="Z:[^\s]:multiple" placeholder="ejemplo@correo.com" required>
           </div>
           <div>
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="submit" :disabled="isSubmitting">
@@ -34,7 +34,7 @@
             <IconArrowNarrowLeft class="w-6 h-6" />
           </button>
           <h2 class="text-2xl font-bold flex-grow text-center">Certificados disponibles</h2>
-          <button class="rounded-full p-2 ml-4 hover:shadow-lg hover:bg-gray-100 active:bg-transparent" @click="reload">
+          <button class="rounded-full p-2 ml-4 hover:shadow-lg hover:bg-gray-100" @click="reload">
             <IconReload :class="isReloading ? 'animate-spin' : ''" class="w-6 h-6" />
           </button>
         </div>
@@ -95,7 +95,7 @@
               Descargar certificado
             </button>
           </div>
-          <p v-else="!results.poster" class="font-bold text-red-500 text-center">No has presentado ningún póster</p>
+          <p v-else="!results.poster" class="font-bold text-red-500 text-center">No has presentado ningún póster, si crees que se trata de un error, conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a></p>
         </div>
       </div>
     </main>
@@ -111,6 +111,7 @@
 import { ref } from 'vue'
 import TopNav from '@/components/TopNav.vue'
 import { IconArrowNarrowLeft, IconReload, IconArrowNarrowDown, IconLoader2 } from '@tabler/icons-vue';
+import { vMaska } from "maska"
 
 type SearchResult = {
   id: string | null;
@@ -134,13 +135,13 @@ const results = ref<SearchResult>({
     },
   poster: false,
 });
-const nif = ref('');
-const email = ref('');
-const isSubmitting = ref(false);
-const isReloading = ref(false);
-const resultsFound = ref(false);
-const firstSubmmited = ref(false);
-const test = ref(true) // True if buttons should be disabled due to testing
+const nif = ref('')
+const email = ref('')
+const isSubmitting = ref(false)
+const isReloading = ref(false)
+const resultsFound = ref(false)
+const firstSubmmited = ref(false)
+const test = ref(false) // True if buttons should be disabled due to testing
 const error = ref({
   'busqueda': '',
   'asistencia': '',
@@ -150,8 +151,8 @@ const error = ref({
 const activeTab = ref('asistencia')
 
 async function handleSubmit() {
-  firstSubmmited.value = true;
-  isSubmitting.value = true;
+  firstSubmmited.value = true
+  isSubmitting.value = true
   error.value = {
     'busqueda': '',
     'asistencia': '',
@@ -159,12 +160,16 @@ async function handleSubmit() {
     'poster': '',
   };
   try {
-    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/certificado?nif=${nif.value}&email=${email.value}`)
-    if (response.status === 404) {
-      results.value.id = null
-    } else {
+    const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/certificado?nif=${nif.value.trim()}&email=${email.value.trim()}`)
+    if (response.status === 200) {
       results.value = await response.json()
-      resultsFound.value = true;
+      resultsFound.value = true
+    } else if (response.status === 404) {
+      results.value.id = null
+      error.value.busqueda = notFoundMsg
+    } else {
+      results.value.id = null
+      error.value.busqueda = 'Ha ocurrido un error al intentar conseguir los certificados. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
     }
   } catch (e) {
     console.log(e)
@@ -187,7 +192,15 @@ async function download(certType: string, micro?: string) {
   if(activeTab.value === 'asistencia') {
     error.value.asistencia = ''
     try {
-      const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/certificado/${path}/${results.value.id}.pdf`)
+      const url = `https://ceebi.wupp.dev/api/ceebi-ii/certificado/${path}/${results.value.id}.pdf`
+      const response = await fetch(url)
+      if(response.status === 200) {
+        window.open(url, '_blank')
+      } else if(response.status === 403) {
+        error.value.asistencia = 'No cumples los requisitos para obtener este certificado. Si crees que se trata de un error, conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
+      } else {
+        error.value.asistencia = 'Ha ocurrido un error al intentar conseguir el certificado. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
+      }
     } catch (e) {
       console.log(e)
       error.value.asistencia = 'Ha ocurrido un error al intentar conseguir el certificado. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
@@ -195,7 +208,15 @@ async function download(certType: string, micro?: string) {
   } else if(activeTab.value === 'microcursos') {
     error.value.microcursos = ''
     try {
-      const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/certificado/${path}/${results.value.id}.pdf`)
+      const url = `https://ceebi.wupp.dev/api/ceebi-ii/certificado/${path}/${results.value.id}.pdf`
+      const response = await fetch(url)
+      if(response.status === 200) {
+        window.open(url, '_blank')
+      } else if(response.status === 403) {
+        error.value.microcursos = 'No cumples los requisitos para obtener este certificado. Si crees que se trata de un error, conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
+      } else {
+        error.value.microcursos = 'Ha ocurrido un error al intentar conseguir el certificado. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
+      }
     } catch (e) {
       console.log(e)
       error.value.microcursos = 'Ha ocurrido un error al intentar conseguir el certificado. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
@@ -203,7 +224,15 @@ async function download(certType: string, micro?: string) {
   } else if(activeTab.value === 'poster') {
     error.value.poster = ''
     try {
-      const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/certificado/${path}/${results.value.id}.pdf`)
+      const url = `https://ceebi.wupp.dev/api/ceebi-ii/certificado/${path}/${results.value.id}.pdf`
+      const response = await fetch(url)
+      if(response.status === 200) {
+        window.open(url, '_blank')
+      } else if(response.status === 404) {
+        error.value.poster = 'No se ha encontrado ningún certificado de poster. Si se trata de un error, conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
+      } else {
+        error.value.poster = 'Ha ocurrido un error al intentar conseguir el certificado. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
+      }
     } catch (e) {
       console.log(e)
       error.value.poster = 'Ha ocurrido un error al intentar conseguir el certificado. Conctacta con nosotros por correo <a href="mailto:info@biociencias.es">info@biociencias.es</a>'
@@ -212,8 +241,8 @@ async function download(certType: string, micro?: string) {
 }
 
 function goBack() {
-  resultsFound.value = false;
-  firstSubmmited.value = false;
+  resultsFound.value = false
+  firstSubmmited.value = false
   results.value = {
     id: null,
     asistencia: 0,
@@ -223,13 +252,13 @@ function goBack() {
         micro2: '',
       },
     poster: false,
-  };
+  }
 }
 
 async function reload() {
-  isReloading.value = true;
-  await handleSubmit();
-  isReloading.value = false;
+  isReloading.value = true
+  await handleSubmit()
+  isReloading.value = false
 }
 
 </script>

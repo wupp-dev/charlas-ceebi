@@ -88,11 +88,11 @@ async function search() {
 
   try {
     const response = await fetch(`https://ceebi.wupp.dev/api/ceebi-ii/consulta/turnos?id=${searchTerm.value}`)
-    if (response.status === 404) {
-      results.value.id = null
-    } else {
+    if (response.status === 200) {
       const data = await response.json()
-      results.value = data.output;
+      results.value = data.output
+    } else {
+      results.value.id = null
     }
   } catch (e) {
     console.log(e)

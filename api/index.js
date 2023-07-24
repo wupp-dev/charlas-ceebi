@@ -11,7 +11,7 @@ require('dotenv').config();
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 console.log(`Connecting to ${supabaseUrl}...`);
-const supabase = supabs.createClient(supabaseUrl, supabaseKey)
+const supabase = supabs.createClient(supabaseUrl, supabaseKey, {auth: {persistSession: false}});
 console.log('Connected!');
 
 const MICROCURSOS_DOS_DIAS = [
@@ -123,7 +123,15 @@ async function checkMicro(id) {
   return null;
 }
 
-async function checkPoster(email) {
+async function checkPoster(id) {
+  return new Promise((resolve, reject) => fs.createReadStream(`./private/certificado/poster/${id}.pdf`)
+    .on('data', (row) => {
+      resolve(true)
+    })
+    .on('error', (err) => { 
+      resolve(false)
+     }))
+/* 
   const res = await fetch(`https://biociencias.es/wp-json/wp/v2/users?search=${email}`)
   const json = await res.json()
   console.log(`Cecked poster for email "${email}"`)
@@ -137,6 +145,7 @@ async function checkPoster(email) {
     console.error('Answer length is greater than one')
     return null
   }
+*/
 }
 
 app.get('/api/ceebi-ii/consulta/turnos', (req, res) => {
@@ -195,11 +204,7 @@ app.get('/api/ceebi-ii/consulta/certificado', async (req, res) => {
 
   const asistencia = await checkAttendance(id);
   const microcursos = await checkMicro(id);
-  const poster = await checkPoster(email);
-
-  console.log(asistencia)
-  console.log(microcursos)
-  console.log(poster)
+  const poster = await checkPoster(id);
 
   if(asistencia != null && microcursos != null && poster != null) {
     return res.status(200).json({
