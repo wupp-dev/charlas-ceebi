@@ -184,6 +184,7 @@ app.get('/api/ceebi-ii/consulta/certificado', async (req, res) => {
   try {
     id = await findNifMailMatch(nif, email);
   } catch (e) {
+    console.log(e);
     return res.status(500).json({ error: 'An error occurred when trying to match the identity document and email!' });
   }
   if (!id) {
