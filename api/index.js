@@ -201,7 +201,7 @@ app.get('/api/ceebi-ii/consulta/certificado', async (req, res) => {
   console.log(microcursos)
   console.log(poster)
 
-  if(asistencia !== null && microcursos !== null && poster !== null) {
+  if(asistencia != null && microcursos != null && poster != null) {
     return res.status(200).json({
       id: id,
       asistencia: asistencia,

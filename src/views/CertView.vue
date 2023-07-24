@@ -21,7 +21,7 @@
             <input class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:shadow-outline" :class="{ 'border-red-500 shadow-outline-red focus:outline-none': firstSubmmited && !isSubmitting && error.busqueda === notFoundMsg }"  id="email" type="email" v-model="email" placeholder="ejemplo@correo.com">
           </div>
           <div>
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-transparent focus:shadow-outline w-full" type="submit" :disabled="isSubmitting">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="submit" :disabled="isSubmitting">
               <IconLoader2 class="m-auto animate-spin" v-if="isSubmitting" /><p v-else>Comprobar certificados disponibles</p>
             </button>
           </div>
@@ -34,7 +34,7 @@
             <IconArrowNarrowLeft class="w-6 h-6" />
           </button>
           <h2 class="text-2xl font-bold flex-grow text-center">Certificados disponibles</h2>
-          <button class="rounded-full p-2 ml-4 hover:shadow-lg hover:bg-gray-100" @click="reload">
+          <button class="rounded-full p-2 ml-4 hover:shadow-lg hover:bg-gray-100 active:bg-transparent" @click="reload">
             <IconReload :class="isReloading ? 'animate-spin' : ''" class="w-6 h-6" />
           </button>
         </div>
