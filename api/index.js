@@ -63,13 +63,14 @@ async function checkAttendance(id) {
   }
 
   if (data) {
-    return Math.round(Math.min(25,
+    const asistencia = Math.round(Math.min(25,
       data.map((att) => ({
         hours: (attendanceSchema).find(
           (schema) => schema.name === att.session
         )?.hours,
       }))
         .reduce((acc, curr) => acc + curr.hours, 0)) / 25 * 100)
+    return isNaN(asistencia) ? 0 : asistencia;
   }
   return null;
 }
