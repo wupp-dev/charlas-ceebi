@@ -228,7 +228,7 @@ app.get('/api/ceebi-ii/certificado/*', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const path = req.params[0].split('/');
   if (path.at(-1) === '') path.pop(); // Remove last element if empty i.e. path ends with '/'
-  if (path.length !== 2 || !(path.length === 3 && path[0] === 'microcurso' )) { // Check if path is valid
+  if (path.length !== 2 && !(path.length === 3 && path[0] === 'microcurso' )) { // Check if path is valid
     console.log('Wrong path!');
     return res.status(400).json({ error: 'Wrong path!' });
   }
