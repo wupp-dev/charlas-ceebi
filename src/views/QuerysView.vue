@@ -44,17 +44,14 @@
         </div>
       </div>
     </main>
-    <footer>
-      <div class="flex flex-grow items-center justify-center text-center">
-        <p class="text-gray-500 text-sm mb-4">Para cualquier duda, contacta con <a class="no-underline text-blue-500 hover:text-blue-700" href="mailto:info@biociencias.es">info@biociencias.es</a></p>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import TopNav from '@/components/TopNav.vue'
+import Footer from '@/components/Footer.vue'
 
 type SearchResult = {
   id: string | null;
