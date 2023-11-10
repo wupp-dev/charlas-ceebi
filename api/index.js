@@ -3,6 +3,7 @@ const csv = require('csv-parser')
 const fs = require('fs')
 const uuid = require('uuid')
 const supabs = require('@supabase/supabase-js')
+const path = require('path')
 require('console-stamp')(console, {
   format: ':date(yyyy-mm-dd HH:MM:ss)'
 })
@@ -170,17 +171,19 @@ async function checkMicro(id) {
  * @param {string} id ID del asistente
  * @returns {boolean} Si tiene póster o no
  */
-async function checkPoster(id) {
-  return new Promise((resolve, reject) =>
-    fs
-      .createReadStream(`./private/certificado/poster/${id}.pdf`)
-      .on('data', (row) => {
-        resolve(true)
-      })
-      .on('error', (err) => {
-        resolve(false)
-      })
-  )
+function checkPoster(id) {
+  const poster_path = `./private/certificado/poster/${id}.zip`
+  return path.exists(poster_path) && fs.lstatSync(poster_path).isFile()
+  // return new Promise((resolve, reject) =>
+  //   fs
+  //     .createReadStream(`./private/certificado/poster/${id}.pdf`)
+  //     .on('data', (row) => {
+  //       resolve(true)
+  //     })
+  //     .on('error', (err) => {
+  //       resolve(false)
+  //     })
+  // )
   /* 
   const res = await fetch(`https://biociencias.es/wp-json/wp/v2/users?search=${email}`)
   const json = await res.json()
@@ -260,7 +263,7 @@ app.get('/api/ceebi-ii/consulta/certificado', async (req, res) => {
 
   const asistencia = isOnline ? 100 : await checkAttendance(id)
   const microcursos = await checkMicro(id)
-  const poster = await checkPoster(id)
+  const poster = checkPoster(id)
 
   if (asistencia != null && microcursos != null && poster != null) {
     return res.status(200).json({
@@ -300,7 +303,7 @@ app.get('/api/ceebi-ii/certificado/*', async (req, res) => {
   const rawId = path.length === 3 ? path[2].split('.') : path[1].split('.') // The id and the extension of the file
 
   let isIdValid = false // Store if id is valid for later use
-  if (rawId.length === 2 && rawId[1] === 'pdf' && uuid.validate(rawId[0])) {
+  if (rawId.length === 2 && (rawId[1] === 'pdf' || rawId[1] === 'zip') && uuid.validate(rawId[0])) {
     isIdValid = true
   }
 
@@ -382,7 +385,7 @@ app.get('/api/ceebi-ii/certificado/*', async (req, res) => {
         })
         filestream.on('open', () => {
           res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`)
-          res.setHeader('Content-type', 'application/pdf')
+          res.setHeader('Content-type', 'application/zip')
           filestream.pipe(res)
         })
       } catch (err) {
