@@ -14,6 +14,9 @@ console.log(`Connecting to ${supabaseUrl}...`)
 const supabase = supabs.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
 console.log('Connected!')
 
+/**
+ * Los nombres de los Microcursos que duran dos días
+ */
 const MICROCURSOS_DOS_DIAS = [
   'Investigación Traslacional y Terapias Avanzadas en Dermatología: de la investigación básica a la clínica',
   'Estudio de las enfermedades genéticas humanas: análisis molecular mediante el uso de herramientas online',
@@ -26,6 +29,12 @@ const MICROCURSOS_DOS_DIAS = [
 ]
 const microRegEx = /^Microcurso "([\w\sáóéíú:(),¿?.ñ¡!\-\/“”–]+)"$/m
 
+/**
+ * Obtén el id de un asistente y si asiste online o presencial a través de su email y nif
+ * @param {string} nif NIF del asistente
+ * @param {string} email Correo electrónico del asistente
+ * @returns {Promise<[string, boolean]>} Un array incluyendo el id del asistente y si es online o no, respectivamente
+ */
 function findNifMailMatch(nif, email) {
   return new Promise((resolve, reject) =>
     fs
@@ -44,6 +53,11 @@ function findNifMailMatch(nif, email) {
   )
 }
 
+/**
+ * Comprueba si un asistente es online
+ * @param {string} id ID del asistente
+ * @returns {Promise<boolean | null>} Si es asistente online o no, devolviendo null si no se encuentra usuario por dicho ID
+ */
 function isIDOnline(id) {
   return new Promise((resolve, reject) =>
     fs
@@ -66,6 +80,11 @@ const app = express()
 const port = 3123
 app.use(express.json())
 
+/**
+ * Obtiene el porcentaje de asistencia (de 0 a 100) del asistente (**No funciona para asistentes online**)
+ * @param {string} id ID del asistente
+ * @returns {null | number} La asistencia de 0 a 100 o 0 si es NaN o null si no se haya o hay un error al obtenerla
+ */
 async function checkAttendance(id) {
   const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json')
 
@@ -100,6 +119,11 @@ async function checkAttendance(id) {
   return null
 }
 
+/**
+ * Obtiene los microcursos en los que ha participado el asistente
+ * @param {string} id ID del asistente
+ * @returns {string[] | null} Array con los nombres de los microcursos o null si hay algún error o no se encuentra
+ */
 async function checkMicro(id) {
   const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json')
 
@@ -141,6 +165,11 @@ async function checkMicro(id) {
   return null
 }
 
+/**
+ * Obtiene si un asistente tiene certificado de póster o no
+ * @param {string} id ID del asistente
+ * @returns {boolean} Si tiene póster o no
+ */
 async function checkPoster(id) {
   return new Promise((resolve, reject) =>
     fs
