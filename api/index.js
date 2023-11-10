@@ -173,7 +173,7 @@ async function checkMicro(id) {
  */
 function checkPoster(id) {
   const poster_path = `./private/certificado/poster/${id}.zip`
-  return path.exists(poster_path) && fs.lstatSync(poster_path).isFile()
+  return fs.existsSync(poster_path) && fs.lstatSync(poster_path).isFile()
   // return new Promise((resolve, reject) =>
   //   fs
   //     .createReadStream(`./private/certificado/poster/${id}.pdf`)
