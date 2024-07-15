@@ -129,6 +129,7 @@ function isIDOnline(edition: string, id: string): Promise<boolean | null> {
 const app = express()
 const port = process.env.API_PORT ?? 3000
 app.use(express.json())
+app.use(express.static('dist'))
 const server = http.createServer(app)
 const io = new Server(server)
 
