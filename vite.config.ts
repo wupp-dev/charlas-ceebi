@@ -88,5 +88,6 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  base: '/'
+  base: '/',
+  envPrefix: ['VITE_', 'SUPABASE_']
 })

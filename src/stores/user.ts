@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import ky from 'ky'
 import { HTTPError } from 'ky'
-import type { WP_User } from 'wp-types'
+import type { WPUser } from '@/lib/wp-types'
 
 export interface WPJWTResponse {
   token: string
@@ -17,7 +17,7 @@ const wpapi = ky.create({
 export const useUserStore = defineStore('user', {
   state: () => ({
     wpToken: null as string | null,
-    user: null as WP_User | null
+    user: null as WPUser | null
   }),
   actions: {
     async login(username: string, password: string) {
@@ -48,7 +48,7 @@ export const useUserStore = defineStore('user', {
         .get(`wp/v2/users/me?context=edit`, {
           headers: authHeaders({})
         })
-        .json<WP_User>()
+        .json<WPUser>()
     },
     logout() {
       this.wpToken = null

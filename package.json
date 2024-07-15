@@ -38,8 +38,7 @@
     "turndown": "^7.2.0",
     "uuid": "^10.0.0",
     "vue": "^3.4.31",
-    "vue-router": "^4.4.0",
-    "wp-types": "^3.66.0"
+    "vue-router": "^4.4.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.3",

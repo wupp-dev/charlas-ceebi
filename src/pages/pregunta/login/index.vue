@@ -61,7 +61,6 @@ import { vMaska } from 'maska/vue'
 import { tryit } from 'radash'
 import { message } from 'ant-design-vue'
 import { useEditionsStore } from '@/stores/editions'
-import { useMECStore } from '@/stores/mec'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
@@ -79,8 +78,6 @@ const formState = reactive<FormState>({
   password: ''
 })
 const error = ref('')
-const mec = useMECStore()
-mec.load()
 
 async function onSubmit() {
   loading.value = true
