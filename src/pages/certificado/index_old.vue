@@ -3,7 +3,7 @@
     <header>
       <TopNav :title="'Descarga de certificados de asistencia'" />
     </header>
-    <main class="flex flex-col flex-grow md:justify-center items-center">
+    <main class="flex flex-col flex-grow items-center md:justify-center">
       <div v-if="!resultsFound" class="max-w-md w-full p-6 bg-white rounded-lg shadow-md my-10">
         <h2 class="text-2xl font-bold mb-6 text-center">Introduce tus datos</h2>
         <p v-if="test" class="text-lg font-bold text-red-500 text-center mb-4">
@@ -236,7 +236,7 @@ import {
   IconArrowNarrowDown,
   IconLoader2
 } from '@tabler/icons-vue'
-import { vMaska } from 'maska'
+import { vMaska } from 'maska/vue'
 
 type SearchResult = {
   id: string | null

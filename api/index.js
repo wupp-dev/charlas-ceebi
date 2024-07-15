@@ -1,408 +1,435 @@
-const express = require('express')
-const csv = require('csv-parser')
-const fs = require('fs')
-const uuid = require('uuid')
-const supabs = require('@supabase/supabase-js')
-const path = require('path')
-require('console-stamp')(console, {
-  format: ':date(yyyy-mm-dd HH:MM:ss)'
-})
-require('dotenv').config()
-
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_KEY
-console.log(`Connecting to ${supabaseUrl}...`)
-const supabase = supabs.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
-console.log('Connected!')
-
+import express from 'express';
+import dotenv from 'dotenv';
+import { validate } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
+import csvParser from 'csv-parser';
+import consoleStamp from 'console-stamp';
+import { Server } from 'socket.io';
+import http from 'http';
+consoleStamp(console, {
+    format: ':date(yyyy-mm-dd HH:MM:ss)'
+});
+dotenv.config();
+const supabaseUrl23 = process.env.SUPABASE_URL_2023 ?? '';
+const supabaseKey23 = process.env.SUPABASE_KEY_2023 ?? '';
+console.log(`Connecting to ${supabaseUrl23}...`);
+const supabase23 = createClient(supabaseUrl23, supabaseKey23, { auth: { persistSession: false } });
+console.log('Connected!');
+const supabaseUrl24 = process.env.SUPABASE_URL_2024 ?? '';
+const supabaseKey24 = process.env.SUPABASE_KEY_2024 ?? '';
+console.log(`Connecting to ${supabaseUrl24}...`);
+const supabase24 = createClient(supabaseUrl24, supabaseKey24, { auth: { persistSession: false } });
+console.log('Connected!');
+const EDITIONS = fs.readdirSync('./private').filter((file) => {
+    return fs.statSync(path.join('./private', file)).isDirectory();
+});
 /**
  * Los nombres de los Microcursos que duran dos días
  */
-const MICROCURSOS_DOS_DIAS = [
-  'Investigación Traslacional y Terapias Avanzadas en Dermatología: de la investigación básica a la clínica',
-  'Estudio de las enfermedades genéticas humanas: análisis molecular mediante el uso de herramientas online',
-  'Uso de parámetros usados actualmente en la Antropología Física y Forense. Identificación de restos óseos, patologías y traumatismos',
-  'Diseño digital e Impresión 3D para el desarrollo de dispositivos personalizados en biomedicina',
-  'Técnicas de (Bio)Impresión 3D y desarrollo de biotintas para aplicación en biomedicina',
-  'Difracción de rayos X. Identificación de fases sólidas en muestras mono y polifásicas. Informaciones complementarias que ofrece la técnica',
-  'Bases moleculares de la nutrición personalizada: Nutrigenómica',
-  'HANDS-ON! Aprende las diferencias técnicas para el análisis de la microbiota intestinal con ejemplos prácticos'
-]
-const microRegEx = /^Microcurso "([\w\sáóéíú:(),¿?.ñ¡!\-\/“”–]+)"$/m
-
-/**
- * Obtén el id de un asistente y si asiste online o presencial a través de su email y nif
- * @param {string} nif NIF del asistente
- * @param {string} email Correo electrónico del asistente
- * @returns {Promise<[string, boolean]>} Un array incluyendo el id del asistente y si es online o no, respectivamente
- */
-function findNifMailMatch(nif, email) {
-  return new Promise((resolve, reject) =>
-    fs
-      .createReadStream('./private/users-data.csv')
-      .pipe(csv())
-      .on('data', (row) => {
-        if (row.email.trim().toLowerCase() === email && row.nif.trim().toUpperCase() === nif) {
-          resolve([row.id, row.modalidad.trim() === 'Online'])
+const MICROCURSOS_DOS_DIAS_23 = [
+    'Investigación Traslacional y Terapias Avanzadas en Dermatología: de la investigación básica a la clínica',
+    'Estudio de las enfermedades genéticas humanas: análisis molecular mediante el uso de herramientas online',
+    'Uso de parámetros usados actualmente en la Antropología Física y Forense. Identificación de restos óseos, patologías y traumatismos',
+    'Diseño digital e Impresión 3D para el desarrollo de dispositivos personalizados en biomedicina',
+    'Técnicas de (Bio)Impresión 3D y desarrollo de biotintas para aplicación en biomedicina',
+    'Difracción de rayos X. Identificación de fases sólidas en muestras mono y polifásicas. Informaciones complementarias que ofrece la técnica',
+    'Bases moleculares de la nutrición personalizada: Nutrigenómica',
+    'HANDS-ON! Aprende las diferencias técnicas para el análisis de la microbiota intestinal con ejemplos prácticos'
+];
+const MICROCURSOS_DOS_DIAS_24 = [
+    'Observación e identificación de organismos fotosintéticos acuáticos: microalgas y macroalgas',
+    'Estudio de las enfermedades genéticas humanas: análisis molecular mediante el uso de herramientas online',
+    'Técnicas de (Bio)Impresión 3D y desarrollo de biotintas para aplicación en biomedicina',
+    'Diseño digital y técnicas de impresión 3D para el desarrollo de dispositivos biomédicos personalizados',
+    'HANDS-ON! Aprende las diferentes técnicas para el análisis de la microbiota intestinal con ejemplos prácticos',
+    'Análisis bioinformático de datos de secuenciación masiva para el análisis de microbioma',
+    'Herramientas para el análisis en metabolómica y el estudio de la función cognitiva y la plasticidad cerebral en modelos animales',
+    'Aplicación de la Biología Molecular a la Medicina de Precisión'
+];
+const microRegEx = /^Microcurso "([\w\sáóéíú:(),¿?.ñ¡!\-\/“”–]+)"$/m;
+function findNifMailMatch(edition, nif, email) {
+    return new Promise(async (resolve, reject) => {
+        const filePath = `./private/${edition}/users-data.csv`;
+        try {
+            await fs.promises.access(filePath, fs.constants.F_OK);
         }
-      })
-      .on('error', (err) => {
-        console.error(err)
-        reject(err)
-      })
-      .on('end', () => resolve(null))
-  )
-}
-
-/**
- * Comprueba si un asistente es online
- * @param {string} id ID del asistente
- * @returns {Promise<boolean | null>} Si es asistente online o no, devolviendo null si no se encuentra usuario por dicho ID
- */
-function isIDOnline(id) {
-  return new Promise((resolve, reject) =>
-    fs
-      .createReadStream('./private/users-data.csv')
-      .pipe(csv())
-      .on('data', (row) => {
-        if (row.id.trim().toLowerCase() === id) {
-          resolve(row.modalidad.trim() === 'Online')
+        catch (err) {
+            console.error(`File "${filePath}" does not exist.`);
+            return reject(new Error(`File "${filePath}" does not exist.`));
         }
-      })
-      .on('error', (err) => {
-        console.error(err)
-        reject(err)
-      })
-      .on('end', () => resolve(null))
-  )
+        fs.createReadStream(filePath)
+            .pipe(csvParser())
+            .on('data', (row) => {
+            if (row.email.trim().toLowerCase() === email && row.nif.trim().toUpperCase() === nif) {
+                resolve([row.id, row.modalidad.trim() === 'Online']);
+            }
+        })
+            .on('error', (err) => {
+            console.error(err);
+            reject(err);
+        })
+            .on('end', () => resolve(null));
+    });
 }
-
-const app = express()
-const port = 3123
-app.use(express.json())
-
-/**
- * Obtiene el porcentaje de asistencia (de 0 a 100) del asistente (**No funciona para asistentes online**)
- * @param {string} id ID del asistente
- * @returns {null | number} La asistencia de 0 a 100 o 0 si es NaN o null si no se haya o hay un error al obtenerla
- */
-async function checkAttendance(id) {
-  const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json')
-
-  const res = await fetch(fileURL.publicUrl)
-  const attendanceSchema = await res.json()
-
-  const { data, error } = await supabase
-    .from('attendance')
-    .select('attendant_id,session,id')
-    .eq('attendant_id', id)
-
-  if (error) {
-    console.error(`Something went wrong while trying to check attendance for id: ${id}`)
-    return null
-  }
-
-  if (data) {
-    const asistencia = Math.round(
-      (Math.min(
-        25,
-        data
-          .map((att) => ({
+function isIDOnline(edition, id) {
+    return new Promise(async (resolve, reject) => {
+        const filePath = `./private/${edition}/users-data.csv`;
+        try {
+            await fs.promises.access(filePath, fs.constants.F_OK);
+        }
+        catch (err) {
+            console.error(`File "${filePath}" does not exist.`);
+            return reject(new Error(`File "${filePath}" does not exist.`));
+        }
+        fs.createReadStream(filePath)
+            .pipe(csvParser())
+            .on('data', (row) => {
+            if (row.id.trim().toLowerCase() === id) {
+                resolve(row.modalidad.trim() === 'Online');
+            }
+        })
+            .on('error', (err) => {
+            console.error(err);
+            reject(err);
+        })
+            .on('end', () => resolve(null));
+    });
+}
+const app = express();
+const port = process.env.API_PORT ?? 3000;
+app.use(express.json());
+const server = http.createServer(app);
+const io = new Server(server);
+async function checkAttendance(edition, id) {
+    const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null;
+    if (!supabase) {
+        console.error(`Edition "${edition}" not found!`);
+        return null;
+    }
+    const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json');
+    const res = await fetch(fileURL.publicUrl);
+    const attendanceSchema = await res.json();
+    const { data, error } = await supabase
+        .from('attendance')
+        .select('attendant_id,session,id')
+        .eq('attendant_id', id);
+    if (error) {
+        console.error(`Something went wrong while trying to check attendance for id: ${id}`);
+        return null;
+    }
+    if (data) {
+        const asistencia = Math.round((Math.min(25, data
+            .map((att) => ({
+            // @ts-ignore
             hours: attendanceSchema.find((schema) => schema.name === att.session)?.hours
-          }))
-          .reduce((acc, curr) => acc + curr.hours, 0)
-      ) /
-        25) *
-        100
-    )
-    return isNaN(asistencia) ? 0 : asistencia
-  }
-  return null
-}
-
-/**
- * Obtiene los microcursos en los que ha participado el asistente
- * @param {string} id ID del asistente
- * @returns {string[] | null} Array con los nombres de los microcursos o null si hay algún error o no se encuentra
- */
-async function checkMicro(id) {
-  const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json')
-
-  const res = await fetch(fileURL.publicUrl)
-  const attendanceSchema = await res.json()
-
-  const { data, error } = await supabase
-    .from('attendance')
-    .select('attendant_id,session,id,event')
-    .eq('attendant_id', id)
-
-  if (error) {
-    console.error(`Something went wrong while trying to check attendance for id: ${id}`)
-    return null
-  }
-
-  if (data) {
-    const microcursos = data
-      ?.map((att) =>
-        att.event
-          ? [att.event]
-          : attendanceSchema.find((schema) => schema.name === att.session)?.events
-      )
-      .flat()
-      .filter((ev) => microRegEx.test(ev ?? ''))
-      .map((ev) => microRegEx.exec(ev)[1] ?? ev)
-      .map((ev, _, arr) => [ev, arr.filter((thisCourse) => thisCourse === ev).length])
-      .filter(([ev, times]) => !(MICROCURSOS_DOS_DIAS.includes(ev) && times !== 2))
-      .map(([ev]) => ev)
-      .filter((ev, pos, self) => self.indexOf(ev) === pos)
-
-    if (microcursos.length > 2) {
-      console.error(`Found more than two microcourses for id "${id}": ${microcursos}`)
-      return null
-    } else {
-      return microcursos
+        }))
+            .reduce((acc, curr) => acc + curr.hours, 0)) /
+            25) *
+            100);
+        return isNaN(asistencia) ? 0 : asistencia;
     }
-  }
-  return null
+    return null;
 }
-
-/**
- * Obtiene si un asistente tiene certificado de póster o no
- * @param {string} id ID del asistente
- * @returns {boolean} Si tiene póster o no
- */
-function checkPoster(id) {
-  const poster_path = `./private/certificado/poster/${id}.zip`
-  return fs.existsSync(poster_path) && fs.lstatSync(poster_path).isFile()
-  // return new Promise((resolve, reject) =>
-  //   fs
-  //     .createReadStream(`./private/certificado/poster/${id}.pdf`)
-  //     .on('data', (row) => {
-  //       resolve(true)
-  //     })
-  //     .on('error', (err) => {
-  //       resolve(false)
-  //     })
-  // )
-  /* 
-  const res = await fetch(`https://biociencias.es/wp-json/wp/v2/users?search=${email}`)
-  const json = await res.json()
-  console.log(`Cecked poster for email "${email}"`)
-  if (json.length === 0) {
-    console.error('Email not found')
-    return null
-  }
-  else if (json.length === 1) {
-    return json[0].acf.has_poster
-  } else {
-    console.error('Answer length is greater than one')
-    return null
-  }
-*/
+async function checkMicro(edition, id) {
+    const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null;
+    if (!supabase) {
+        console.error(`Edition "${edition}" not found!`);
+        return null;
+    }
+    const MICROCURSOS_DOS_DIAS = edition === 'ceebi-iii'
+        ? MICROCURSOS_DOS_DIAS_24
+        : edition === 'ceebi-ii'
+            ? MICROCURSOS_DOS_DIAS_23
+            : [];
+    const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json');
+    const res = await fetch(fileURL.publicUrl);
+    const attendanceSchema = await res.json();
+    const { data, error } = await supabase
+        .from('attendance')
+        .select('attendant_id,session,id,event')
+        .eq('attendant_id', id);
+    if (error) {
+        console.error(`Something went wrong while trying to check attendance for id: ${id}`);
+        return null;
+    }
+    if (data) {
+        const microcursos = data
+            ?.map((att) => att.event
+            ? [att.event]
+            : // @ts-ignore
+                attendanceSchema.find((schema) => schema.name === att.session)?.events)
+            .flat()
+            .filter((ev) => microRegEx.test(ev ?? ''))
+            .map((ev) => microRegEx.exec(ev)[1] ?? ev)
+            .map((ev, _, arr) => [ev, arr.filter((thisCourse) => thisCourse === ev).length])
+            .filter(([ev, times]) => !(MICROCURSOS_DOS_DIAS.includes(ev) && times !== 2))
+            .map(([ev]) => ev)
+            .filter((ev, pos, self) => self.indexOf(ev) === pos);
+        if (microcursos.length > 2) {
+            console.error(`Found more than two microcourses for id "${id}": ${microcursos}`);
+            return null;
+        }
+        else {
+            return microcursos;
+        }
+    }
+    return null;
 }
-
-app.get('/api/ceebi-ii/consulta/turnos', (req, res) => {
-  console.log('GET /api/ceebi-ii/consulta/turnos')
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  if (!req.query.id) {
-    console.log('No id provided!')
-    return res.status(400).json({ error: 'Request must include an id!' })
-  }
-  const input = req.query.id.trim().toUpperCase()
-  let found = false
-  fs.createReadStream('./private/query-data.csv')
-    .pipe(csv())
-    .on('data', (row) => {
-      if (row.id.trim().toUpperCase() === input) {
-        console.log(`Found "${row.id}"!`)
-        found = true
-        res.json({ output: row })
+function checkPoster(edition, id) {
+    const poster_path = `./private/${edition}/certificado/poster/${id}.zip`;
+    return fs.existsSync(poster_path) && fs.lstatSync(poster_path).isFile();
+    // return new Promise((resolve, reject) =>
+    //   fs
+    //     .createReadStream(`./private/certificado/poster/${id}.pdf`)
+    //     .on('data', (row) => {
+    //       resolve(true)
+    //     })
+    //     .on('error', (err) => {
+    //       resolve(false)
+    //     })
+    // )
+    /*
+      const res = await fetch(`https://biociencias.es/wp-json/wp/v2/users?search=${email}`)
+      const json = await res.json()
+      console.log(`Cecked poster for email "${email}"`)
+      if (json.length === 0) {
+        console.error('Email not found')
+        return null
       }
-    })
-    .on('end', () => {
-      if (!found) {
-        console.log(`Not found "${input}"!`)
-        res.status(404).json({ error: 'No results found!' })
+      else if (json.length === 1) {
+        return json[0].acf.has_poster
+      } else {
+        console.error('Answer length is greater than one')
+        return null
       }
+    */
+}
+app.get('/api/:edition/consulta/turnos', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const edition = req.params.edition.trim().toLowerCase();
+    console.log(`GET /api/${edition}/consulta/turnos`);
+    if (!EDITIONS.includes(edition)) {
+        console.log(`Edition "${edition}" not found!`);
+        return res.status(400).json({ error: `Edition "${edition}" not found!` });
+    }
+    if (!req.query.id || typeof req.query.id !== 'string') {
+        console.log('No id provided!');
+        return res.status(400).json({ error: 'Request must include an id!' });
+    }
+    const input = req.query.id.trim().toUpperCase();
+    let found = false;
+    fs.createReadStream(`./private/${edition}/query-data.csv`)
+        .pipe(csvParser())
+        .on('data', (row) => {
+        if (row.id.trim().toUpperCase() === input) {
+            console.log(`Found "${row.id}"!`);
+            found = true;
+            res.json({ output: row });
+        }
     })
-    .on('error', (err) => {
-      console.error(err)
-      res.status(500).json({ error: 'Internal server error!' })
+        .on('end', () => {
+        if (!found) {
+            console.log(`Not found "${input}"!`);
+            res.status(404).json({ error: 'No results found!' });
+        }
     })
-})
-
-app.get('/api/ceebi-ii/consulta/certificado', async (req, res) => {
-  console.log('GET /api/ceebi-ii/consulta/certificado')
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  if (!req.query.nif || !req.query.email) {
-    console.log('No identity document or email provided!')
-    return res.status(400).json({ error: 'Request must include an identity document and a email!' })
-  }
-
-  const nif = req.query.nif.trim().toUpperCase()
-  const email = req.query.email.trim().toLowerCase()
-  let id, isOnline
-  try {
-    const res = await findNifMailMatch(nif, email)
-    id = res[0]
-    isOnline = res[1]
-  } catch (e) {
-    console.log(e)
-    return res
-      .status(500)
-      .json({ error: 'An error occurred when trying to match the identity document and email!' })
-  }
-  if (!id) {
-    console.log('Identity document and email pair not found!')
-    return res
-      .status(404)
-      .json({ error: 'Identity document and email do not match or could not be found!' })
-  }
-
-  const asistencia = isOnline ? 100 : await checkAttendance(id)
-  const microcursos = await checkMicro(id)
-  const poster = checkPoster(id)
-
-  if (asistencia != null && microcursos != null && poster != null) {
-    return res.status(200).json({
-      id: id,
-      asistencia: asistencia,
-      microcursos: {
-        doble:
-          microcursos.length === 2
-            ? true
-            : microcursos.length === 1
-            ? !MICROCURSOS_DOS_DIAS.includes(microcursos[0])
-            : false,
-        micro1: microcursos.length > 0 ? microcursos[0] : null,
-        micro2: microcursos.length === 2 ? microcursos[1] : null
-      },
-      poster: poster
-    })
-  } else {
-    return res.status(500).json({ error: 'Something went wrong while trying to achieve user data' })
-  }
-})
-
-app.get('/api/ceebi-ii/certificado/*', async (req, res) => {
-  console.log('GET /api/ceebi-ii/certificado/*')
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  const path = req.params[0].split('/')
-  if (path.at(-1) === '') path.pop() // Remove last element if empty i.e. path ends with '/'
-  if (path.length !== 2 && !(path.length === 3 && path[0] === 'microcurso')) {
-    // Check if path is valid
-    console.log('Wrong path!')
-    return res.status(400).json({ error: 'Wrong path!' })
-  }
-
-  const certType = path[0] // The type of certificate 'asistencia', 'microcurso' or 'poster'
-  const micro = path.length === 3 ? path[1] : null
-  const rawId = path.length === 3 ? path[2].split('.') : path[1].split('.') // The id and the extension of the file
-
-  let isIdValid = false // Store if id is valid for later use
-  if (rawId.length === 2 && (rawId[1] === 'pdf' || rawId[1] === 'zip') && uuid.validate(rawId[0])) {
-    isIdValid = true
-  }
-
-  if (certType === 'asistencia') {
-    if (isIdValid) {
-      const asistencia = (await isIDOnline(rawId[0])) ? 100 : await checkAttendance(rawId[0])
-      if (asistencia === null) {
+        .on('error', (err) => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error!' });
+    });
+});
+app.get('/api/:edition/consulta/certificado', async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const edition = req.params.edition.trim().toLowerCase();
+    console.log(`GET /api/${edition}/consulta/certificado`);
+    if (!EDITIONS.includes(edition)) {
+        console.log(`Edition "${edition}" not found!`);
+        return res.status(400).json({ error: `Edition "${edition}" not found!` });
+    }
+    if (!req.query.nif ||
+        !req.query.email ||
+        typeof req.query.nif !== 'string' ||
+        typeof req.query.email !== 'string') {
+        console.log('No identity document or email provided!');
+        return res.status(400).json({ error: 'Request must include an identity document and a email!' });
+    }
+    const nif = req.query.nif.trim().toUpperCase();
+    const email = req.query.email.trim().toLowerCase();
+    let id, isOnline;
+    try {
+        const match = await findNifMailMatch(edition, nif, email);
+        if (!match) {
+            console.log('Identity document and email pair not found!');
+            return res
+                .status(404)
+                .json({ error: 'Identity document and email do not match or could not be found!' });
+        }
+        id = match[0];
+        isOnline = match[1];
+    }
+    catch (e) {
+        console.log(e);
         return res
-          .status(500)
-          .json({ error: 'Something went wrong while trying to achieve attendance data' })
-      } else if (asistencia < 80) {
-        return res.status(403).json({ error: "User didn't reach minimun attendance" })
-      }
-      try {
-        const filestream = fs.createReadStream(
-          `./private/certificado/${certType}/${rawId.join('.')}`
-        )
-        filestream.on('error', (err) => {
-          console.error(`Certificate "${certType}/${rawId.join('.')}" not found!`)
-          return res.status(404).json({ error: 'Could not find certificate file' })
-        })
-        filestream.on('open', () => {
-          res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`)
-          res.setHeader('Content-type', 'application/pdf')
-          filestream.pipe(res)
-        })
-      } catch (err) {
-        // Return an internal server error if file is not found
-        console.error(`Certificate "${certType}/${rawId.join('.')}"  not found!`)
-        return res.status(404).json({ error: 'Could not find certificate file' })
-      }
-    } else {
-      console.log('Invalid id!')
-      return res.status(400).json({ error: 'Wrong id or id extension in path!' })
+            .status(500)
+            .json({ error: 'An error occurred when trying to match the identity document and email!' });
     }
-  } else if (certType === 'microcurso') {
-    if (isIdValid) {
-      const microcursos = (await checkMicro(rawId[0])).map((mic) =>
-        mic.replace(/[áóéíú:(),¿?.ñ¡!\-\/“”– ]/g, '_')
-      )
-      if (microcursos === null) {
-        return res
-          .status(500)
-          .json({ error: 'Something went wrong while trying to achieve microcourses data' })
-      } else if (!microcursos.includes(micro)) {
-        return res.status(403).json({ error: "User didn't attend to this microcourse" })
-      }
-      try {
-        const filestream = fs.createReadStream(
-          `./private/certificado/${certType}/${micro}/${rawId.join('.')}`
-        )
-        filestream.on('error', (err) => {
-          console.error(`Certificate "${certType}/${micro}/${rawId.join('.')}" not found!`)
-          return res.status(404).json({ error: 'Could not find certificate file' })
-        })
-        filestream.on('open', () => {
-          res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`)
-          res.setHeader('Content-type', 'application/pdf')
-          filestream.pipe(res)
-        })
-      } catch (err) {
-        // Return an internal server error if file is not found
-        console.error(`Certificate "${certType}/${micro}/${rawId.join('.')}"  not found!`)
-        return res.status(404).json({ error: 'Could not find certificate file' })
-      }
-    } else {
-      console.log('Invalid id!')
-      return res.status(400).json({ error: 'Wrong id or id extension in path!' })
+    const asistencia = isOnline ? 100 : await checkAttendance(edition, id);
+    const microcursos = await checkMicro(edition, id);
+    const poster = checkPoster(edition, id);
+    if (asistencia != null && microcursos != null && poster != null) {
+        const MICROCURSOS_DOS_DIAS = edition === 'ceebi-iii'
+            ? MICROCURSOS_DOS_DIAS_24
+            : edition === 'ceebi-ii'
+                ? MICROCURSOS_DOS_DIAS_23
+                : [];
+        return res.status(200).json({
+            id: id,
+            asistencia: asistencia,
+            microcursos: {
+                doble: microcursos.length === 2
+                    ? true
+                    : microcursos.length === 1
+                        ? !MICROCURSOS_DOS_DIAS.includes(microcursos[0])
+                        : false,
+                micro1: microcursos.length > 0 ? microcursos[0] : null,
+                micro2: microcursos.length === 2 ? microcursos[1] : null
+            },
+            poster: poster
+        });
     }
-  } else if (certType === 'poster') {
-    if (isIdValid) {
-      try {
-        const filestream = fs.createReadStream(
-          `./private/certificado/${certType}/${rawId.join('.')}`
-        )
-        filestream.on('error', (err) => {
-          console.error(`Certificate "${certType}/${rawId.join('.')}" not found!`)
-          return res.status(404).json({ error: 'Could not find certificate file' })
-        })
-        filestream.on('open', () => {
-          res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`)
-          res.setHeader('Content-type', 'application/zip')
-          filestream.pipe(res)
-        })
-      } catch (err) {
-        // Return an internal server error if file is not found
-        console.error(`Certificate "${certType}/${rawId.join('.')}"  not found!`)
-        return res.status(404).json({ error: 'Could not find certificate file' })
-      }
-    } else {
-      console.log('Invalid id!')
-      return res.status(400).json({ error: 'Wrong id or id extension in path!' })
+    else {
+        return res.status(500).json({ error: 'Something went wrong while trying to achieve user data' });
     }
-  } else {
-    console.log('Wrong certificate type!')
-    return res.status(400).json({ error: 'Wrong certificate type in path!' })
-  }
-})
-
-app.listen(port, () => {
-  console.log(`API listening at http://localhost:${port}/api`)
-})
+});
+app.get('/api/:edition/certificado/*', async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const edition = req.params.edition.trim().toLowerCase();
+    console.log(`GET /api/${edition}/certificado`);
+    if (!EDITIONS.includes(edition)) {
+        console.log(`Edition "${edition}" not found!`);
+        return res.status(400).json({ error: `Edition "${edition}" not found!` });
+    }
+    const path = (req.baseUrl + req.path).split('/');
+    if (path.at(-1) === '')
+        path.pop(); // Remove last element if empty i.e. path ends with '/'
+    if (path.length !== 2 && !(path.length === 3 && path[0] === 'microcurso')) {
+        // Check if path is valid
+        console.log('Wrong path!');
+        return res.status(400).json({ error: 'Wrong path!' });
+    }
+    const certType = path[0]; // The type of certificate 'asistencia', 'microcurso' or 'poster'
+    const micro = path.length === 3 ? path[1] : null;
+    const rawId = path.length === 3 ? path[2].split('.') : path[1].split('.'); // The id and the extension of the file
+    let isIdValid = false; // Store if id is valid for later use
+    if (rawId.length === 2 && (rawId[1] === 'pdf' || rawId[1] === 'zip') && validate(rawId[0])) {
+        isIdValid = true;
+    }
+    if (certType === 'asistencia') {
+        if (isIdValid) {
+            const asistencia = (await isIDOnline(edition, rawId[0]))
+                ? 100
+                : await checkAttendance(edition, rawId[0]);
+            if (asistencia === null) {
+                return res
+                    .status(500)
+                    .json({ error: 'Something went wrong while trying to achieve attendance data' });
+            }
+            else if (asistencia < 80) {
+                return res.status(403).json({ error: "User didn't reach minimun attendance" });
+            }
+            try {
+                const filestream = fs.createReadStream(`./private/${edition}/certificado/${certType}/${rawId.join('.')}`);
+                filestream.on('error', (err) => {
+                    console.error(`Certificate "${certType}/${rawId.join('.')}" not found!`);
+                    return res.status(404).json({ error: 'Could not find certificate file' });
+                });
+                filestream.on('open', () => {
+                    res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`);
+                    res.setHeader('Content-type', 'application/pdf');
+                    filestream.pipe(res);
+                });
+            }
+            catch (err) {
+                // Return an internal server error if file is not found
+                console.error(`Certificate "${certType}/${rawId.join('.')}"  not found!`);
+                return res.status(404).json({ error: 'Could not find certificate file' });
+            }
+        }
+        else {
+            console.log('Invalid id!');
+            return res.status(400).json({ error: 'Wrong id or id extension in path!' });
+        }
+    }
+    else if (certType === 'microcurso') {
+        if (isIdValid) {
+            var microcursos = await checkMicro(edition, rawId[0]);
+            if (microcursos === null) {
+                return res
+                    .status(500)
+                    .json({ error: 'Something went wrong while trying to achieve microcourses data' });
+            }
+            microcursos = microcursos.map((mic) => mic.replace(/[áóéíú:(),¿?.ñ¡!\-\/“”– ]/g, '_'));
+            if (micro && !microcursos.includes(micro)) {
+                return res.status(403).json({ error: "User didn't attend to this microcourse" });
+            }
+            try {
+                const filestream = fs.createReadStream(`./private/${edition}/certificado/${certType}/${micro}/${rawId.join('.')}`);
+                filestream.on('error', (err) => {
+                    console.error(`Certificate "${certType}/${micro}/${rawId.join('.')}" not found!`);
+                    return res.status(404).json({ error: 'Could not find certificate file' });
+                });
+                filestream.on('open', () => {
+                    res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`);
+                    res.setHeader('Content-type', 'application/pdf');
+                    filestream.pipe(res);
+                });
+            }
+            catch (err) {
+                // Return an internal server error if file is not found
+                console.error(`Certificate "${certType}/${micro}/${rawId.join('.')}"  not found!`);
+                return res.status(404).json({ error: 'Could not find certificate file' });
+            }
+        }
+        else {
+            console.log('Invalid id!');
+            return res.status(400).json({ error: 'Wrong id or id extension in path!' });
+        }
+    }
+    else if (certType === 'poster') {
+        if (isIdValid) {
+            try {
+                const filestream = fs.createReadStream(`./private/${edition}/certificado/${certType}/${rawId.join('.')}`);
+                filestream.on('error', (err) => {
+                    console.error(`Certificate "${certType}/${rawId.join('.')}" not found!`);
+                    return res.status(404).json({ error: 'Could not find certificate file' });
+                });
+                filestream.on('open', () => {
+                    res.setHeader('Content-disposition', `attachment; filename=${rawId.join('.')}`);
+                    res.setHeader('Content-type', 'application/zip');
+                    filestream.pipe(res);
+                });
+            }
+            catch (err) {
+                // Return an internal server error if file is not found
+                console.error(`Certificate "${certType}/${rawId.join('.')}"  not found!`);
+                return res.status(404).json({ error: 'Could not find certificate file' });
+            }
+        }
+        else {
+            console.log('Invalid id!');
+            return res.status(400).json({ error: 'Wrong id or id extension in path!' });
+        }
+    }
+    else {
+        console.log('Wrong certificate type!');
+        return res.status(400).json({ error: 'Wrong certificate type in path!' });
+    }
+});
+server.listen(port, () => {
+    console.log(`API listening at http://localhost:${port}/api`);
+});
