@@ -73,23 +73,26 @@
 </template>
 
 <script setup lang="ts">
-import { type MenuProps } from 'ant-design-vue'
+import { message, type MenuProps } from 'ant-design-vue'
 import { useWindowSize } from '@vueuse/core'
 import {
   IconMenu2,
   IconSearch,
   IconCertificate,
   IconHelpHexagon,
-  IconSettings
+  IconSettings,
+  IconLogout
 } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useEditionsStore } from '@/stores/editions'
+import { useUserStore } from '@/stores/user'
 import type { SelectProps } from 'ant-design-vue'
 
 const props = defineProps({
   title: String
 })
 const router = useRouter()
+const userStore = useUserStore()
 const editionsStore = useEditionsStore()
 const { width, height } = useWindowSize()
 
@@ -130,7 +133,7 @@ const items = ref([
     icon: () => h(IconCertificate, { height: '1rem' }),
     label: 'Certificados de asistencia',
     title: 'Descarga de certificados de asistencia',
-    link: 'certificado',
+    link: '/certificado',
     style: {
       fontSize: showCompactMenu.value ? '0.875rem' : '1rem',
       display: 'flex',
@@ -142,7 +145,7 @@ const items = ref([
     icon: () => h(IconHelpHexagon, { height: '1rem' }),
     label: 'Ver y hacer preguntas',
     title: 'Ver y hacer preguntas',
-    link: 'pregunta',
+    link: '/pregunta',
     style: {
       fontSize: showCompactMenu.value ? '0.875rem' : '1rem',
       display: 'flex',
@@ -164,6 +167,24 @@ const items = ref([
     }
   }
 ])
+
+if (userStore.user) {
+  items.value.push({
+    key: '5',
+    icon: () => h(IconLogout, { height: '1rem' }),
+    label: 'Cerrar sesión',
+    title: 'Cerrar sesión',
+    onClick: () => {
+      userStore.logout()
+      message.success('Sesión cerrada correctamente.')
+    },
+    style: {
+      fontSize: showCompactMenu.value ? '0.875rem' : '1rem',
+      display: 'flex',
+      alignItems: 'center'
+    }
+  })
+}
 
 const handleClick: MenuProps['onClick'] = (menuInfo) => {
   if (menuInfo.item.link) {

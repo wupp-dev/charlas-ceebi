@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import App from './App.vue'
 import './assets/main.css'
@@ -12,6 +13,7 @@ const router = createRouter({
   routes
 })
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 app.use(router)
 app.use(pinia)

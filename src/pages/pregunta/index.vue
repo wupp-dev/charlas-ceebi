@@ -51,7 +51,11 @@
 
 <script setup lang="ts">
 import { message } from 'ant-design-vue'
+import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const userStore = useUserStore()
 const currentSession = ref(null)
 const error = ref(false)
 const loading = ref(true)
@@ -60,4 +64,19 @@ const question = ref('')
 const onSubmit = () => {
   console.log(question.value)
 }
+
+watch(
+  () => userStore.user,
+  async (user) => {
+    if (!user) {
+      router.push('/pregunta/login')
+    }
+  }
+)
+
+onMounted(() => {
+  if (!userStore.user) {
+    router.push('/pregunta/login')
+  }
+})
 </script>
