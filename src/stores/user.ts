@@ -34,7 +34,7 @@ export const useUserStore = defineStore('user', {
       } catch (e) {
         console.error('error when fetching token from wp')
         // @ts-ignore response has a code
-        throw (e as HTTPError).response.code
+        throw (e as HTTPError).response.json().code
       }
       this.wpToken = res.token
 
