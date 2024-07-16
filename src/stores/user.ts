@@ -32,17 +32,15 @@ export const useUserStore = defineStore('user', {
           })
           .json<WPJWTResponse>()
       } catch (e) {
-        console.log(res)
-        console.error('error when fetching token from wp')
-        console.log('error', e)
-        // @ts-ignore
-        console.log('error', e.code)
-        // @ts-ignore response has a code
-        console.log('error code', e.response)
-        throw e as HTTPError
+        if ((e as HTTPError).response) {
+          const errorResponse = await (e as HTTPError).response.json()
+          const errorCode: string = errorResponse.code
+          console.log('Código de error:', errorCode)
+          throw new Error(errorCode)
+        } else {
+          throw new Error('error when fetching token from wp')
+        }
       }
-      console.log(res)
-      this.wpToken = res.token
 
       const authHeaders = (actual: Record<string, string>) => ({
         Authorization: 'Bearer ' + this.wpToken,

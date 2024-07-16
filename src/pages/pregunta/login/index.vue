@@ -84,7 +84,6 @@ async function onSubmit() {
   try {
     await userStore.login(formState.email, formState.password)
   } catch (e) {
-    console.log(e)
     if (e === '[jwt_auth] invalid_username') {
       error.value = 'El correo electrónico introducido no es válido.'
     } else if (e === '[jwt_auth] incorrect_password') {
