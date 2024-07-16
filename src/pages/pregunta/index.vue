@@ -4,33 +4,32 @@
       <TopNav :title="'Ver y hacer preguntas'" />
     </header>
     <div v-if="supported">
-      <div class="m-4">
-        <div v-if="loading" class="w-fit mx-auto">
-          <a-spin tip="Conectando con el servidor..." />
+      <div class="m-4 max-w-[80%] mx-auto">
+        <div class="w-fit mx-auto">
+          <a-spin v-if="loading" tip="Conectando con el servidor..." />
+          <a-alert
+            v-else-if="currentSession"
+            message="Sesión en curso"
+            :description="eventTitle"
+            type="info"
+            style="font-size: 1rem"
+            show-icon
+          />
+          <a-alert
+            v-else-if="error"
+            message="Ha ocurrido un problema al intentar conectarse al servidor."
+            type="error"
+            style="font-size: 1rem"
+            show-icon
+          />
+          <a-alert
+            v-else
+            message="Actualmente no hay ninguna sesión en curso."
+            type="warning"
+            style="font-size: 1rem"
+            show-icon
+          />
         </div>
-        <a-alert
-          v-else-if="currentSession"
-          message="Sesión en curso"
-          :description="eventTitle"
-          type="info"
-          style="font-size: 1rem"
-          show-icon
-          class="max-w-[80%] mx-auto"
-        />
-        <a-alert
-          v-else-if="error"
-          message="Ha ocurrido un problema al intentar conectarse al servidor."
-          type="error"
-          style="font-size: 1rem"
-          show-icon
-        />
-        <a-alert
-          v-else
-          message="Actualmente no hay ninguna sesión en curso."
-          type="warning"
-          style="font-size: 1rem"
-          show-icon
-        />
       </div>
 
       <form

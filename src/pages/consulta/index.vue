@@ -4,7 +4,16 @@
       <TopNav :title="'Consulta de talleres y microcharlas'" />
     </header>
     <main v-auto-animate class="flex flex-col flex-grow items-center md:justify-center">
-      <div class="max-md:mt-10 w-6/12 max-w-[35rem] min-w-[20rem]">
+      <div v-if="!available">
+        <a-alert
+          message="Apartado aun no disponible."
+          type="warning"
+          style="font-size: 1.125rem"
+          class="m-8"
+          show-icon
+        />
+      </div>
+      <div v-else class="max-md:mt-10 w-6/12 max-w-[35rem] min-w-[20rem]">
         <a-spin :spinning="loading">
           <a-input-search
             v-model:value="query"
@@ -21,7 +30,7 @@
           </a-input-search></a-spin
         >
       </div>
-      <div v-if="searched && !loading && !error" class="m-4">
+      <div v-if="available && searched && !loading && !error" class="m-4">
         <div v-if="results.id">
           <a-table :dataSource="dataSource" :columns="columns" :pagination="false" />
         </div>
@@ -45,6 +54,7 @@ type SearchResult = {
   t3: string
 }
 
+const available = ref(false)
 const editionStore = useEditionStore()
 const route = useRoute()
 const router = useRouter()
