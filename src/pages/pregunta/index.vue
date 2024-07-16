@@ -4,7 +4,7 @@
       <TopNav :title="'Ver y hacer preguntas'" />
     </header>
     <div v-if="supported">
-      <div class="w-full m-4">
+      <div class="m-4">
         <div v-if="loading" class="w-fit mx-auto">
           <a-spin tip="Conectando con el servidor..." />
         </div>
