@@ -84,7 +84,15 @@ async function onSubmit() {
   try {
     await userStore.login(formState.email, formState.password)
   } catch (e) {
-    error.value = 'Ha ocurrido un error al iniciar sesión.'
+    // @ts-ignore response has a code
+    if (e.code === '[jwt_auth] invalid_username') {
+      error.value = 'El correo electrónico introducido no es válido.'
+      // @ts-ignore response has a code
+    } else if (e.code === '[jwt_auth] incorrect_password') {
+      error.value = 'La contraseña introducida no es válida.'
+    } else {
+      error.value = 'Ha ocurrido un error al iniciar sesión.'
+    }
   }
   loading.value = false
   if (userStore.user) {

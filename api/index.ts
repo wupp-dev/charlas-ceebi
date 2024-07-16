@@ -6,7 +6,6 @@ import fs from 'fs'
 import path from 'path'
 import csvParser from 'csv-parser'
 import consoleStamp from 'console-stamp'
-import { Server } from 'socket.io'
 import http from 'http'
 
 consoleStamp(console, {
@@ -131,7 +130,6 @@ const port = process.env.API_PORT ?? 3000
 app.use(express.json())
 app.use(express.static('dist'))
 const server = http.createServer(app)
-const io = new Server(server)
 
 async function checkAttendance(edition: string, id: string): Promise<number | null> {
   const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null
