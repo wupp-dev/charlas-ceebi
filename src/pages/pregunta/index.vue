@@ -442,7 +442,9 @@ const load = async (loadSession = true) => {
 }
 
 watch(currentSession, (newSession, oldSession) => {
-  if (newSession && newSession.id !== oldSession?.id) {
+  if (!newSession && oldSession) {
+    questions.value = []
+  } else if (newSession && newSession.id !== oldSession?.id) {
     questions.value = []
     load(false)
   }
