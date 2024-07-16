@@ -35,7 +35,6 @@ export const useUserStore = defineStore('user', {
         if ((e as HTTPError).response) {
           const errorResponse = await (e as HTTPError).response.json()
           const errorCode: string = errorResponse.code
-          console.log('Código de error:', errorCode)
           throw new Error(errorCode)
         } else {
           throw new Error('error when fetching token from wp')
