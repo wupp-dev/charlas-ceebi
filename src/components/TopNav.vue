@@ -1,10 +1,10 @@
 <template>
   <a-modal
-    v-model:open="showModal"
+    v-model:open="showSelectorModal"
     title="Ediciones del CEEBI"
     cancelText="Cancelar"
     okText="Confirmar"
-    @ok="handleOk"
+    @ok="selectorHandleOk"
   >
     <p class="mb-2">Puedes cambiar la edición de la cual quieres obtener información.</p>
     <a-select ref="select" v-model:value="currentEdition" :options="editions"></a-select>
@@ -85,6 +85,7 @@ import {
 } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useEditionsStore } from '@/stores/editions'
+import { useEditionStore } from '@/stores/edition'
 import { useUserStore } from '@/stores/user'
 import type { SelectProps } from 'ant-design-vue'
 
@@ -94,11 +95,12 @@ const props = defineProps({
 const router = useRouter()
 const userStore = useUserStore()
 const editionsStore = useEditionsStore()
+const editionStore = useEditionStore()
 const { width, height } = useWindowSize()
 
 const showCompactMenu = computed(() => width.value < 768 || width.value < height.value)
 const showDrawer = ref(false)
-const showModal = ref(false)
+const showSelectorModal = ref(false)
 
 const selectedKeys = computed(() => {
   return items.value.filter((item) => item.title === props.title).map((item) => item.key)
@@ -158,7 +160,7 @@ const items = ref([
     label: 'Seleccionar otra edición',
     title: 'Seleccionar otra edición',
     onClick: () => {
-      showModal.value = true
+      showSelectorModal.value = true
     },
     style: {
       fontSize: showCompactMenu.value ? '0.875rem' : '1rem',
@@ -196,12 +198,12 @@ const handleClick: MenuProps['onClick'] = (menuInfo) => {
   }
 }
 
-const handleOk = () => {
-  editionsStore.selected = currentEdition.value
-  showModal.value = false
+const selectorHandleOk = () => {
+  editionStore.selected = currentEdition.value
+  showSelectorModal.value = false
 }
 
 onMounted(() => {
-  currentEdition.value = editionsStore.selected
+  currentEdition.value = editionStore.selected
 })
 </script>

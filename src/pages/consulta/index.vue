@@ -36,7 +36,7 @@
 import { message } from 'ant-design-vue'
 import { tryit } from 'radash'
 import { useRoute, useRouter } from 'vue-router'
-import { useEditionsStore } from '@/stores/editions'
+import { useEditionStore } from '@/stores/edition'
 
 type SearchResult = {
   id: string | null
@@ -45,7 +45,7 @@ type SearchResult = {
   t3: string
 }
 
-const editionsStore = useEditionsStore()
+const editionStore = useEditionStore()
 const route = useRoute()
 const router = useRouter()
 const query = ref('')
@@ -95,8 +95,12 @@ const dataSource = computed(() => {
   }
 })
 
-async function onSubmit() {
-  loading.value = true
+editionStore.$subscribe(() => reset())
+
+const reset = (alsoQuery = true) => {
+  if (loading.value) {
+    return
+  }
   error.value = false
   results.value = {
     id: null,
@@ -104,15 +108,23 @@ async function onSubmit() {
     t2: '',
     t3: ''
   }
+  searched.value = false
+  if (alsoQuery) {
+    query.value = ''
+  }
+}
+
+async function onSubmit() {
+  reset(false)
+  loading.value = true
 
   if (!query.value) {
     loading.value = false
-    searched.value = false
     return
   }
 
   const [err, res] = await tryit(fetch)(
-    `${import.meta.env.VITE_API_URL}/${editionsStore.$state.selected}/consulta/turnos?id=${query.value}`
+    `${import.meta.env.VITE_API_URL}/${editionStore.selected}/consulta/turnos?id=${query.value}`
   )
   if (err) {
     error.value = true

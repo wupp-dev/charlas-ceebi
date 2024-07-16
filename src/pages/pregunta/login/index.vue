@@ -59,6 +59,7 @@
 <script lang="ts" setup>
 import { vMaska } from 'maska/vue'
 import { useEditionsStore } from '@/stores/editions'
+import { useEditionStore } from '@/stores/edition'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
@@ -68,6 +69,7 @@ interface FormState {
 }
 
 const editionsStore = useEditionsStore()
+const editionStore = useEditionStore()
 const router = useRouter()
 const userStore = useUserStore()
 const loading = ref(false)
@@ -76,7 +78,7 @@ const formState = reactive<FormState>({
   password: ''
 })
 const error = ref('')
-const supported = computed(() => editionsStore.selected === 'ceebi-iii')
+const supported = computed(() => editionStore.selected === editionsStore.latest)
 
 async function onSubmit() {
   loading.value = true

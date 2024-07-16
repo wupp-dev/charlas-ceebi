@@ -4,7 +4,6 @@ import { editions } from './editionsData'
 export const useEditionsStore = defineStore('editions', {
   state: () => ({
     editions: editions,
-    selected: 'ceebi-iii'
-  }),
-  persist: true
+    latest: 'ceebi-iii'
+  })
 })

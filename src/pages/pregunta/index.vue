@@ -111,6 +111,7 @@ import { message, Modal } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user'
 import { useMECStore } from '@/stores/mec'
 import { useEditionsStore } from '@/stores/editions'
+import { useEditionStore } from '@/stores/edition'
 import { useRouter } from 'vue-router'
 import { createClient } from '@supabase/supabase-js'
 import { useAsyncState } from '@vueuse/core'
@@ -125,8 +126,9 @@ const supabase = createClient<Database>(
 const router = useRouter()
 const userStore = useUserStore()
 const editionsStore = useEditionsStore()
+const editionStore = useEditionStore()
 const error = ref(false)
-const supported = computed(() => editionsStore.selected === 'ceebi-iii')
+const supported = computed(() => editionStore.selected === editionsStore.latest)
 const loading = ref(true)
 const mec = useMECStore()
 

@@ -74,7 +74,7 @@
 import { vMaska } from 'maska/vue'
 import { tryit } from 'radash'
 import { message } from 'ant-design-vue'
-import { useEditionsStore } from '@/stores/editions'
+import { useEditionStore } from '@/stores/edition'
 
 interface FormState {
   nif: string
@@ -103,7 +103,7 @@ const results = ref<SearchResult>({
   poster: false
 })
 
-const editionsStore = useEditionsStore()
+const editionStore = useEditionStore()
 const loading = ref(false)
 const notFound = ref(false)
 
@@ -139,7 +139,7 @@ async function onSubmit() {
     poster: ''
   }
   const [err, res] = await tryit(fetch)(
-    `${import.meta.env.VITE_API_URL}/${editionsStore.$state.selected}/consulta/certificado?nif=${formState.nif.trim()}&email=${formState.email.trim()}`
+    `${import.meta.env.VITE_API_URL}/${editionStore.selected}/consulta/certificado?nif=${formState.nif.trim()}&email=${formState.email.trim()}`
   )
   if (err) {
     error.value.busqueda =
