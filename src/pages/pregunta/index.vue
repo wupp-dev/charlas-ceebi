@@ -82,7 +82,8 @@
           </p>
           <div class="flex flex-col justify-end" @click="toggleLike(question.id)">
             <a-badge
-              :count="question.question_likes[0].count > 0 ? question.question_likes[0].count : 0"
+              v-if="question.question_likes[0].count > 0"
+              :count="question.question_likes[0].count ?? 0"
               color="cyan"
             ></a-badge>
             <IconThumbUpFilled v-if="isQuestionLiked(question.id)" class="size-5 mb-2" />
