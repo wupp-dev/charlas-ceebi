@@ -4,7 +4,16 @@
       <TopNav :title="'Descarga de certificados de asistencia'" />
     </header>
     <main class="flex flex-col flex-grow items-center md:justify-center">
-      <div v-if="!results.id">
+      <div v-if="!available">
+        <a-alert
+          message="Apartado en desarrollo, aun no disponible."
+          type="warning"
+          style="font-size: 1.125rem"
+          class="m-8"
+          show-icon
+        />
+      </div>
+      <div v-else-if="!results.id">
         <a-spin v-auto-animate :spinning="loading">
           <a-card
             v-auto-animate
@@ -103,6 +112,7 @@ const results = ref<SearchResult>({
   poster: false
 })
 
+const available = ref(false)
 const editionStore = useEditionStore()
 const loading = ref(false)
 const notFound = ref(false)
