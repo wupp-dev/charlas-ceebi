@@ -58,8 +58,6 @@
 
 <script lang="ts" setup>
 import { vMaska } from 'maska/vue'
-import { tryit } from 'radash'
-import { message } from 'ant-design-vue'
 import { useEditionsStore } from '@/stores/editions'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
@@ -78,6 +76,7 @@ const formState = reactive<FormState>({
   password: ''
 })
 const error = ref('')
+const supported = computed(() => editionsStore.selected === 'ceebi-iii')
 
 async function onSubmit() {
   loading.value = true
@@ -97,7 +96,16 @@ function onFinishFailed() {
   error.value = ''
 }
 
+watch(supported, () => {
+  if (!supported.value) {
+    router.push('/pregunta')
+  }
+})
+
 onMounted(() => {
+  if (!supported.value) {
+    router.push('/pregunta')
+  }
   if (userStore.user) {
     router.push('/pregunta')
   }

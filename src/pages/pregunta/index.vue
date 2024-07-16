@@ -3,90 +3,102 @@
     <header>
       <TopNav :title="'Ver y hacer preguntas'" />
     </header>
-    <div class="mx-auto w-fit m-4">
-      <a-spin v-if="loading" tip="Conectando con el servidor..." />
+    <div v-if="supported">
+      <div class="mx-auto w-fit m-4">
+        <a-spin v-if="loading" tip="Conectando con el servidor..." />
+        <a-alert
+          v-else-if="currentSession"
+          message="Sesión en curso"
+          :description="eventTitle"
+          type="info"
+          style="font-size: 1rem"
+          show-icon
+          class="max-w-[80%] mx-auto"
+        />
+        <a-alert
+          v-else-if="error"
+          message="Ha ocurrido un problema al intentar conectarse al servidor."
+          type="error"
+          style="font-size: 1rem"
+          show-icon
+        />
+        <a-alert
+          v-else
+          message="Actualmente no hay ninguna sesión en curso."
+          type="warning"
+          style="font-size: 1rem"
+          show-icon
+        />
+      </div>
+
+      <form
+        v-if="currentSession"
+        @submit.prevent="sendQuestion"
+        class="max-md:mt-10 w-6/12 max-w-[35rem] min-w-[20rem] mb-6 mx-auto flex flex-col items-stretch justify-center"
+      >
+        <a-textarea
+          v-model:value="questionToAsk"
+          placeholder="Escribe tu pregunta"
+          size="large"
+          class="w-full"
+          :status="error ? 'error' : ''"
+          :disabled="loading"
+          required
+          :minlength="20"
+          :maxlength="500"
+          showCount
+        >
+          <template #enterButton>
+            <a-button type="primary">Preguntar</a-button>
+          </template>
+        </a-textarea>
+        <a-button html-type="submit" type="primary" class="mt-5"> Enviar </a-button>
+      </form>
+
+      <main v-auto-animate class="">
+        <a-card
+          v-for="question in questions"
+          :key="question.id"
+          class="w-80 mb-4 mx-auto border-0"
+          :class="{
+            'border-l-8 border-primary':
+              question.user_id === userStore.user?.id && !question.hidden,
+            'border-l-8 border-amber-500': question.hidden
+          }"
+          :body-style="{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'nowrap',
+            alignItems: 'stretch',
+            justifyContent: 'space-evenly',
+            padding: 0
+          }"
+          @contextmenu.prevent="() => promptDeleteQuestion(question.id, question.user_id ?? -1)"
+        >
+          <p class="whitespace-pre-wrap flex-grow max-w-[85%] break-words p-5">
+            {{ question.question }}
+          </p>
+          <div class="flex flex-col justify-end" @click="toggleLike(question.id)">
+            <a-badge :count="question.question_likes[0].count ?? 0" color="cyan"></a-badge>
+            <IconThumbUpFilled v-if="isQuestionLiked(question.id)" class="size-5 mb-2" />
+            <IconThumbUp class="size-5 mb-2" v-else />
+          </div>
+
+          <p class="absolute left-2 top-1 text-sm text-gray-500" v-if="question.hidden">
+            <IconEyeOff class="inline-block size-4 -mt-1.5" /> Oculta
+          </p>
+        </a-card>
+      </main>
+    </div>
+    <div v-else class="flex flex-col flex-grow items-center md:justify-center">
       <a-alert
-        v-else-if="currentSession"
-        message="Sesión en curso"
-        :description="eventTitle"
-        type="info"
-        style="font-size: 1rem"
-        show-icon
-        class="max-w-[80%] mx-auto"
-      />
-      <a-alert
-        v-else-if="error"
-        message="Ha ocurrido un problema al intentar conectarse al servidor."
-        type="error"
-        style="font-size: 1rem"
-        show-icon
-      />
-      <a-alert
-        v-else
-        message="Actualmente no hay ninguna sesión en curso."
+        message="Edición no soportada, cambia a la edición actual para poder ver y hacer preguntas."
         type="warning"
-        style="font-size: 1rem"
+        style="font-size: 1.125rem"
+        class="m-8"
         show-icon
       />
     </div>
-
-    <form
-      v-if="currentSession"
-      @submit.prevent="sendQuestion"
-      class="max-md:mt-10 w-6/12 max-w-[35rem] min-w-[20rem] mb-6 mx-auto flex flex-col items-stretch justify-center"
-    >
-      <a-textarea
-        v-model:value="questionToAsk"
-        placeholder="Escribe tu pregunta"
-        size="large"
-        class="w-full"
-        :status="error ? 'error' : ''"
-        :disabled="loading"
-        required
-        :minlength="20"
-        :maxlength="500"
-        showCount
-      >
-        <template #enterButton>
-          <a-button type="primary">Preguntar</a-button>
-        </template>
-      </a-textarea>
-      <a-button html-type="submit" type="primary" class="mt-5"> Enviar </a-button>
-    </form>
-
-    <main v-auto-animate class="">
-      <a-card
-        v-for="question in questions"
-        :key="question.id"
-        class="w-80 mb-4 mx-auto border-0"
-        :class="{
-          'border-l-8 border-primary': question.user_id === userStore.user?.id && !question.hidden,
-          'border-l-8 border-amber-500': question.hidden
-        }"
-        :body-style="{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'nowrap',
-          alignItems: 'stretch',
-          justifyContent: 'space-evenly',
-          padding: 0
-        }"
-        @contextmenu.prevent="() => promptDeleteQuestion(question.id, question.user_id ?? -1)"
-      >
-        <p class="whitespace-pre-wrap flex-grow max-w-[85%] break-words p-5">
-          {{ question.question }}
-        </p>
-        <div class="flex flex-col justify-end" @click="toggleLike(question.id)">
-          <a-badge :count="question.question_likes[0].count ?? 0" color="cyan"></a-badge>
-          <IconThumbUpFilled v-if="isQuestionLiked(question.id)" class="size-5 mb-2" />
-          <IconThumbUp class="size-5 mb-2" v-else />
-        </div>
-
-        <p class="absolute left-2 top-1 text-sm text-gray-500" v-if="question.hidden">
-          <IconEyeOff class="inline-block size-4 -mt-1.5" /> Oculta
-        </p>
-      </a-card>
-    </main>
 
     <Footer />
   </div>
@@ -98,10 +110,11 @@
 import { message, Modal } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user'
 import { useMECStore } from '@/stores/mec'
+import { useEditionsStore } from '@/stores/editions'
 import { useRouter } from 'vue-router'
 import { createClient } from '@supabase/supabase-js'
 import { useAsyncState } from '@vueuse/core'
-import type { Database } from '../../supabase-types'
+import type { Database } from '@/supabase-types'
 import { IconThumbUpFilled, IconThumbUp, IconAlertCircle, IconEyeOff } from '@tabler/icons-vue'
 
 const supabase = createClient<Database>(
@@ -111,7 +124,9 @@ const supabase = createClient<Database>(
 )
 const router = useRouter()
 const userStore = useUserStore()
+const editionsStore = useEditionsStore()
 const error = ref(false)
+const supported = computed(() => editionsStore.selected === 'ceebi-iii')
 const loading = ref(true)
 const mec = useMECStore()
 
@@ -267,6 +282,7 @@ const computeLikesGiven = async () => {
     if (error) {
       message.error('Error al obtener los likes: ' + error.message)
     } else {
+      // @ts-ignore data[0].count does exist
       if (data === null || data.length === 0 || data[0].count === 0) {
         const { error } = await supabase.from('user_likes_given').insert({
           session_id: currentSession.value.id,
@@ -349,7 +365,6 @@ const sendQuestion = async () => {
     body: {
       question: questionToAsk.value,
       user: userStore.user?.id ?? -1
-      // TODO apikey as header
     },
     headers: {
       apikey: import.meta.env.VITE_BUILD_KEY
@@ -423,9 +438,19 @@ watch(currentSession, (newSession, oldSession) => {
   if (newSession && newSession.id !== oldSession?.id) load(false)
 })
 
+watch(supported, () => {
+  if (supported.value && !userStore.user) {
+    router.push('/pregunta/login')
+  }
+})
+
 onMounted(() => {
+  if (!supported.value) {
+    return
+  }
   if (!userStore.user) {
     router.push('/pregunta/login')
+    return
   }
 
   load()

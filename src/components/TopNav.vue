@@ -105,7 +105,7 @@ const selectedKeys = computed(() => {
 })
 
 const editions = computed<SelectProps['options']>(() => {
-  return editionsStore.$state.editions.map((edition) => {
+  return editionsStore.editions.map((edition) => {
     return {
       value: edition.id,
       label: `${edition.name} - ${edition.year}`,
@@ -197,11 +197,11 @@ const handleClick: MenuProps['onClick'] = (menuInfo) => {
 }
 
 const handleOk = () => {
-  editionsStore.$state.selected = currentEdition.value
+  editionsStore.selected = currentEdition.value
   showModal.value = false
 }
 
 onMounted(() => {
-  currentEdition.value = editionsStore.$state.selected
+  currentEdition.value = editionsStore.selected
 })
 </script>
