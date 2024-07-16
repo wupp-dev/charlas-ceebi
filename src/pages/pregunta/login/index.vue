@@ -85,7 +85,7 @@ async function onSubmit() {
     await userStore.login(formState.email, formState.password)
   } catch (e) {
     // @ts-ignore response has a code
-    console.log(e.code)
+    console.log(e.json())
     // @ts-ignore response has a code
     if (e.code === '[jwt_auth] invalid_username') {
       error.value = 'El correo electrónico introducido no es válido.'
