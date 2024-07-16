@@ -40,6 +40,7 @@ export const useUserStore = defineStore('user', {
           throw new Error('error when fetching token from wp')
         }
       }
+      this.wpToken = res.token
 
       const authHeaders = (actual: Record<string, string>) => ({
         Authorization: 'Bearer ' + this.wpToken,
