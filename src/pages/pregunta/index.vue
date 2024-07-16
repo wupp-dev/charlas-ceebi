@@ -4,7 +4,7 @@
       <TopNav :title="'Ver y hacer preguntas'" />
     </header>
     <div v-if="supported">
-      <div class="mx-auto w-fit m-4">
+      <div class="mx-auto w-full m-4">
         <a-spin v-if="loading" tip="Conectando con el servidor..." />
         <a-alert
           v-else-if="currentSession"
@@ -388,7 +388,6 @@ const sendQuestion = async () => {
 const promptDeleteQuestion = (id: number, question_user_id: number) => {
   if (userStore.user?.id != question_user_id) return
 
-  console.info('hi')
   modal.confirm({
     title: '¿Seguro que quieres borrar esta pregunta?',
     icon: h(IconAlertCircle, { class: 'size-10 inline-block text-amber-500' }),
