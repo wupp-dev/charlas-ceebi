@@ -445,6 +445,11 @@ watch(supported, () => {
 })
 
 onMounted(() => {
+  load()
+  setInterval(reloadSession, 10000)
+})
+
+onBeforeMount(() => {
   if (!supported.value) {
     return
   }
@@ -452,8 +457,5 @@ onMounted(() => {
     router.push('/pregunta/login')
     return
   }
-
-  load()
-  setInterval(reloadSession, 10000)
 })
 </script>

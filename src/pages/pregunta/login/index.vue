@@ -102,7 +102,7 @@ watch(supported, () => {
   }
 })
 
-onMounted(() => {
+onBeforeMount(() => {
   if (!supported.value) {
     router.push('/pregunta')
   }
