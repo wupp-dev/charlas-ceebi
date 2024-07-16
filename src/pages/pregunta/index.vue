@@ -5,7 +5,9 @@
     </header>
     <div v-if="supported">
       <div class="w-full m-4">
-        <a-spin class="mx-auto" v-if="loading" tip="Conectando con el servidor..." />
+        <div v-if="loading" class="w-fit mx-auto">
+          <a-spin tip="Conectando con el servidor..." />
+        </div>
         <a-alert
           v-else-if="currentSession"
           message="Sesión en curso"
