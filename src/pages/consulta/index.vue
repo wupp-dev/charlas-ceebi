@@ -54,7 +54,7 @@ type SearchResult = {
   t3: string
 }
 
-const available = ref(false)
+const available = ref(true)
 const editionStore = useEditionStore()
 const route = useRoute()
 const router = useRouter()
