@@ -17,7 +17,7 @@
         <a-spin :spinning="loading">
           <a-input-search
             v-model:value="query"
-            placeholder="Correo o DNI/NIE"
+            placeholder="DNI/NIE"
             size="large"
             class="w-full"
             :status="error ? 'error' : ''"
