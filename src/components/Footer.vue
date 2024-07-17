@@ -16,10 +16,10 @@
         <a class="text-primary hover:text-secondary" href="https://www.linkedin.com/in/deunaocampo/"
           >Lucas de Uña Ocampo</a
         >
-        bajo la licencia MIT. Consulta el código en
+        bajo la licencia GPLv3. Consulta el código en
         <a
           class="text-primary hover:text-secondary"
-          href="https://github.com/ComicIvans/charlas-ceebi"
+          href="https://github.com/wupp-dev/charlas-ceebi"
           >GitHub</a
         >.
       </p>
