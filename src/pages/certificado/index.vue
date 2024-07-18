@@ -14,7 +14,7 @@
         <a-spin v-auto-animate :spinning="loading">
           <a-card
             v-auto-animate
-            class="my-8 max-w-[30rem] min-w-[25rem]"
+            class="my-8 max-w-[30rem]"
             title="Introduce tus datos"
             :bordered="false"
             :headStyle="{ 'font-size': '1.35rem', 'text-align': 'center' }"
@@ -71,7 +71,7 @@
       <div v-else>
         <a-card
           v-auto-animate
-          class="my-8 max-w-[30rem] min-w-[25rem]"
+          class="my-8 max-w-[30rem]"
           title="Certificados disponibles"
           :bordered="false"
           :headStyle="{
