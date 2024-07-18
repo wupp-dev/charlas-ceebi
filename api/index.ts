@@ -368,7 +368,7 @@ app.get('/api/:edition/consulta/certificado', async (req, res) => {
   }
 })
 
-app.get('/api/:edition/certificado/*', async (req, res) => {
+app.get('/api/:edition/certificado/:certificate(*)', async (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   res.setHeader('Access-Control-Allow-Origin', '*')
 
@@ -379,7 +379,8 @@ app.get('/api/:edition/certificado/*', async (req, res) => {
     return res.status(400).json({ error: `Edition "${edition}" not found!` })
   }
 
-  const path = (req.baseUrl + req.path).split('/')
+  const path = req.params.certificate.split('/')
+  if (path.at(0) === '') path.shift() // Remove first element if empty i.e. path starts with '/'
   if (path.at(-1) === '') path.pop() // Remove last element if empty i.e. path ends with '/'
   if (path.length !== 2 && !(path.length === 3 && path[0] === 'microcurso')) {
     // Check if path is valid
