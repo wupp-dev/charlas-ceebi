@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { useEditionsStore } from '@/stores/editions'
-import { useEditionStore } from '@/stores/edition'
 
 const showNewEditionModal = ref(false)
 const editionsStore = useEditionsStore()
-const editionStore = useEditionStore()
 
 const newEditionHandleOk = () => {
-  editionStore.selected = editionsStore.latest
+  editionsStore.selected = editionsStore.latest
   showNewEditionModal.value = false
 }
 
 onMounted(() => {
-  if (editionStore.selected !== editionsStore.latest) {
+  if (editionsStore.selected !== editionsStore.latest) {
     showNewEditionModal.value = true
   }
 })

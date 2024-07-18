@@ -85,7 +85,6 @@ import {
 } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useEditionsStore } from '@/stores/editions'
-import { useEditionStore } from '@/stores/edition'
 import { useUserStore } from '@/stores/user'
 import type { SelectProps } from 'ant-design-vue'
 
@@ -95,7 +94,6 @@ const props = defineProps({
 const router = useRouter()
 const userStore = useUserStore()
 const editionsStore = useEditionsStore()
-const editionStore = useEditionStore()
 const { width, height } = useWindowSize()
 
 const showCompactMenu = computed(() => width.value < 768 || width.value < height.value)
@@ -179,6 +177,7 @@ if (userStore.user) {
     onClick: () => {
       userStore.logout()
       message.success('Sesión cerrada correctamente.')
+      items.value.pop()
     },
     style: {
       fontSize: showCompactMenu.value ? '0.875rem' : '1rem',
@@ -199,11 +198,11 @@ const handleClick: MenuProps['onClick'] = (menuInfo) => {
 }
 
 const selectorHandleOk = () => {
-  editionStore.selected = currentEdition.value
+  editionsStore.selected = currentEdition.value
   showSelectorModal.value = false
 }
 
 onMounted(() => {
-  currentEdition.value = editionStore.selected
+  currentEdition.value = editionsStore.selected
 })
 </script>

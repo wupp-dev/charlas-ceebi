@@ -116,7 +116,6 @@ import { message, Modal } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user'
 import { useMECStore } from '@/stores/mec'
 import { useEditionsStore } from '@/stores/editions'
-import { useEditionStore } from '@/stores/edition'
 import { useRouter } from 'vue-router'
 import { createClient } from '@supabase/supabase-js'
 import { useAsyncState } from '@vueuse/core'
@@ -131,9 +130,8 @@ const supabase = createClient<Database>(
 const router = useRouter()
 const userStore = useUserStore()
 const editionsStore = useEditionsStore()
-const editionStore = useEditionStore()
 const error = ref(false)
-const supported = computed(() => editionStore.selected === editionsStore.latest)
+const supported = computed(() => editionsStore.selected === editionsStore.latest)
 const loading = ref(true)
 const mec = useMECStore()
 
@@ -276,10 +274,9 @@ const isQuestionLiked = computed(() => (id: number) => liked.value.includes(id))
 const likesGiven: Record<number, number> = {}
 const areLikesGivenLoaded = ref(false)
 const computeLikesGiven = async () => {
-  if (userStore.user === null) {
-    message.error('No se ha encontrado el usuario')
-  } else if (currentSession.value === null) {
-    message.error('No se ha encontrado la sesión actual')
+  if (userStore.user === null || currentSession.value === null) {
+    message.error('Es necesario volver a iniciar sesión')
+    router.push('/pregunta/login')
   } else if (likesGiven[currentSession.value.id ?? -1] === undefined) {
     const { data, error } = await supabase
       .from('user_likes_given')
@@ -307,7 +304,8 @@ const computeLikesGiven = async () => {
 
 const toggleLike = async (id: number, isInitial: boolean = false) => {
   if (currentSession.value === null) {
-    message.error('No se ha encontrado la sesión actual')
+    message.error('Es necesario volver a iniciar sesión')
+    router.push('/pregunta/login')
     return
   }
 
@@ -323,7 +321,8 @@ const toggleLike = async (id: number, isInitial: boolean = false) => {
     message.error('No puedes dar más a like en esta sesión')
   } else {
     if (userStore.user?.acf.id_base_de_datos_app === undefined) {
-      message.error('No se ha encontrado el usuario')
+      message.error('Es necesario volver a iniciar sesión')
+      router.push('/pregunta/login')
       return
     }
     const { error } = await supabase.from('question_likes').insert({
@@ -430,7 +429,15 @@ const deleteQuestion = async (id: number, question_user_id: number) => {
 const load = async (loadSession = true) => {
   loading.value = true
 
-  if (loadSession) await reloadSession()
+  if (loadSession) {
+    await userStore.refreshUser()
+    await reloadSession()
+  }
+  if (!userStore.user) {
+    message.error('Es necesario volver a iniciar sesión')
+    router.push('/pregunta/login')
+    return
+  }
   if (currentSession.value !== null) {
     await setupQuestions()
     await setupLiked()
@@ -455,18 +462,19 @@ watch(supported, () => {
   }
 })
 
-onMounted(() => {
-  load()
-  setInterval(reloadSession, 10000)
+onMounted(async () => {
+  if (userStore.wpToken) {
+    load()
+    setInterval(reloadSession, 10000)
+  }
 })
 
 onBeforeMount(() => {
   if (!supported.value) {
     return
   }
-  if (!userStore.user) {
+  if (!userStore.wpToken) {
     router.push('/pregunta/login')
-    return
   }
 })
 </script>

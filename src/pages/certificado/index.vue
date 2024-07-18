@@ -28,10 +28,22 @@
               :layout="'vertical'"
               :label-col="{ span: 32 }"
               :wrapper-col="{ span: 32 }"
-              autocomplete="off"
               @finish="onSubmit"
               @finishFailed="onFinishFailed"
             >
+              <a-form-item
+                label="Correo electrónico"
+                name="email"
+                :rules="[{ required: true, message: 'Introduce tu correo electrónico' }]"
+              >
+                <a-input
+                  v-model:value="formState.email"
+                  placeholder="ejemplo@correo.es"
+                  v-maska
+                  data-maska="Z"
+                  data-maska-tokens="Z:[^\s]:multiple"
+                />
+              </a-form-item>
               <a-form-item
                 label="Documento identificativo (DNI o similar)"
                 name="nif"
@@ -45,19 +57,10 @@
                   data-maska-tokens="Z:[a-z0-9A-Z]:multiple"
                 />
               </a-form-item>
-
-              <a-form-item
-                label="Correo electrónico"
-                name="email"
-                :rules="[{ required: true, message: 'Introduce tu correo electrónico' }]"
-              >
-                <a-input
-                  v-model:value="formState.email"
-                  placeholder="ejemplo@correo.es"
-                  v-maska
-                  data-maska="Z"
-                  data-maska-tokens="Z:[^\s]:multiple"
-                />
+              <a-form-item name="remember" :wrapper-col="{ span: 32 }">
+                <a-checkbox v-model:checked="formState.remember"
+                  >Recordar correo electrónico</a-checkbox
+                >
               </a-form-item>
               <a-form-item :wrapper-col="{ span: 32 }">
                 <a-button class="mx-auto" type="primary" html-type="submit"
@@ -83,11 +86,13 @@
 import { vMaska } from 'maska/vue'
 import { tryit } from 'radash'
 import { message } from 'ant-design-vue'
-import { useEditionStore } from '@/stores/edition'
+import { useEditionsStore } from '@/stores/editions'
+import { useUserStore } from '@/stores/user'
 
 interface FormState {
   nif: string
   email: string
+  remember: boolean
 }
 
 type SearchResult = {
@@ -113,13 +118,15 @@ const results = ref<SearchResult>({
 })
 
 const available = ref(false)
-const editionStore = useEditionStore()
+const editionsStore = useEditionsStore()
+const usersStore = useUserStore()
 const loading = ref(false)
 const notFound = ref(false)
 
 const formState = reactive<FormState>({
   nif: '',
-  email: ''
+  email: '',
+  remember: false
 })
 
 const error = ref({
@@ -149,7 +156,7 @@ async function onSubmit() {
     poster: ''
   }
   const [err, res] = await tryit(fetch)(
-    `${import.meta.env.VITE_API_URL}/${editionStore.selected}/consulta/certificado?nif=${formState.nif.trim()}&email=${formState.email.trim()}`
+    `${import.meta.env.VITE_API_URL}/${editionsStore.selected}/consulta/certificado?nif=${formState.nif.trim()}&email=${formState.email.trim()}`
   )
   if (err) {
     error.value.busqueda =
@@ -158,6 +165,11 @@ async function onSubmit() {
   } else {
     if (res.status === 200) {
       results.value = await res.json()
+      if (formState.remember) {
+        usersStore.email = formState.email
+      } else {
+        usersStore.email = null
+      }
       message.success('Usuario encontrado.')
     } else if (res.status === 404) {
       notFound.value = true
@@ -192,4 +204,11 @@ function onFinishFailed() {
     poster: ''
   }
 }
+
+onBeforeMount(() => {
+  if (usersStore.email) {
+    formState.remember = true
+    formState.email = usersStore.email
+  }
+})
 </script>

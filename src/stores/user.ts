@@ -17,7 +17,9 @@ const wpapi = ky.create({
 export const useUserStore = defineStore('user', {
   state: () => ({
     wpToken: null as string | null,
-    user: null as WPUser | null
+    user: null as WPUser | null,
+    email: null as string | null,
+    nif: null as string | null
   }),
   actions: {
     async login(username: string, password: string) {
@@ -56,7 +58,32 @@ export const useUserStore = defineStore('user', {
     logout() {
       this.wpToken = null
       this.user = null
+    },
+    async refreshUser() {
+      if (await this.isLoggedIn) return
+      else this.logout()
     }
   },
-  persist: true
+  getters: {
+    async isLoggedIn() {
+      if (!this.wpToken) return false
+      const authHeaders = (actual: Record<string, string>) => ({
+        Authorization: 'Bearer ' + this.wpToken,
+        ...actual
+      })
+      try {
+        this.user = await wpapi
+          .get(`wp/v2/users/me?context=edit`, {
+            headers: authHeaders({})
+          })
+          .json<WPUser>()
+        return true
+      } catch {
+        return false
+      }
+    }
+  },
+  persist: {
+    paths: ['wpToken', 'email']
+  }
 })
