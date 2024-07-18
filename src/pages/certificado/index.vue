@@ -8,13 +8,13 @@
     </div>
     <main class="flex flex-col flex-grow items-center md:justify-center">
       <div v-if="!available">
-        <a-alert message="Apartado aun no disponible." type="warning" class="m-8" show-icon />
+        <a-alert message="Apartado aun no disponible." type="warning" class="my-8" show-icon />
       </div>
       <div v-else-if="!results.id">
         <a-spin v-auto-animate :spinning="loading">
           <a-card
             v-auto-animate
-            class="m-8 max-w-[30rem] min-w-[25rem]"
+            class="my-8 max-w-[30rem] min-w-[25rem]"
             title="Introduce tus datos"
             :bordered="false"
             :headStyle="{ 'font-size': '1.35rem', 'text-align': 'center' }"
@@ -71,7 +71,7 @@
       <div v-else>
         <a-card
           v-auto-animate
-          class="m-8 max-w-[30rem] min-w-[25rem]"
+          class="my-8 max-w-[30rem] min-w-[25rem]"
           title="Certificados disponibles"
           :bordered="false"
           :headStyle="{
