@@ -4,7 +4,7 @@
       <TopNav :title="'Descarga de certificados de asistencia'" />
     </header>
     <div v-if="error" class="m-4 max-w-[80%] mx-auto">
-      <a-alert :message="error" :type="notFound ? 'warning' : 'error'" show-icon closable />
+      <a-alert :message="error" :type="notFound ? 'warning' : 'error'" show-icon />
     </div>
     <main class="flex flex-col flex-grow items-center md:justify-center">
       <div v-if="!available">
@@ -14,7 +14,7 @@
         <a-spin v-auto-animate :spinning="loading">
           <a-card
             v-auto-animate
-            class="m-8 max-w-[30rem]"
+            class="m-8 max-w-[30rem] min-w-[25rem]"
             title="Introduce tus datos"
             :bordered="false"
             :headStyle="{ 'font-size': '1.35rem', 'text-align': 'center' }"
@@ -71,7 +71,7 @@
       <div v-else>
         <a-card
           v-auto-animate
-          class="m-8 max-w-[30rem]"
+          class="m-8 max-w-[30rem] min-w-[25rem]"
           title="Certificados disponibles"
           :bordered="false"
           :headStyle="{
@@ -114,13 +114,12 @@
                 </template></a-progress
               >
             </div>
-            <p class="font-bold mb-2 text-center">
+            <p class="font-bold text-center">
               Tu porcentaje de asistencia es del {{ Math.trunc(results.asistencia * 100) / 100 }}%
             </p>
             <div v-if="results.asistencia >= 80.0" class="mx-auto w-fit">
               <a-button
                 @click="download"
-                type="primary"
                 shape="round"
                 class="flex flex-row items-center justify-center mt-4"
               >
@@ -153,10 +152,10 @@
                   </template></a-progress
                 >
               </div>
-              <div class="w-fit mx-auto">
-                <a-button @click="download(results.microcursos.micro1)" type="text"
+              <div class="w-fit mx-auto micro-btn mt-4">
+                <a-button @click="download(results.microcursos.micro1)"
                   ><div class="inline-flex items-center justify-center">
-                    <IconDownload class="w-4 h-4" />
+                    <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
                   </div></a-button
                 >
@@ -189,42 +188,84 @@
                   </template></a-progress
                 >
               </div>
-              <div class="w-fit mx-auto">
-                <a-button @click="download(results.microcursos.micro1)" type="text"
+              <div class="w-fit mx-auto micro-btn mt-4">
+                <a-button @click="download(results.microcursos.micro1)"
                   ><div class="inline-flex items-center justify-center">
-                    <IconDownload class="w-4 h-4" />
+                    <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
                   </div></a-button
                 >
               </div>
-              <div class="w-fit mx-auto">
-                <a-button @click="download(results.microcursos.micro2)" type="text"
+              <div class="w-fit mx-auto micro-btn mt-4">
+                <a-button @click="download(results.microcursos.micro2)"
                   ><div class="inline-flex items-center justify-center">
-                    <IconDownload class="w-4 h-4" />
-                    <p class="max-w-full">{{ results.microcursos.micro2 }}</p>
+                    <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
+                    {{ results.microcursos.micro2 }}
                   </div></a-button
                 >
               </div>
             </div>
             <div v-else-if="results.microcursos.doble && results.microcursos.micro1">
-              <p class="font-bold mb-2 text-center">Has asistido a 1/2 microcursos de un día:</p>
-              <p class="font-bold mb-2 text-center">
-                {{ results.microcursos.micro1 }}
-              </p>
-              <a-button
-                @click="download(results.microcursos.micro1)"
-                type="primary"
-                shape="round"
-                class="flex flex-row items-center justify-center mt-4"
-              >
-                <template #icon>
-                  <IconDownload class="h-4 w-4 m-1" />
-                </template>
-                Descargar certificado
-              </a-button>
+              <a-alert
+                message="Solo has asistido a 1 microcurso de un día."
+                type="warning"
+                class="mb-6"
+                show-icon
+              />
+              <div class="w-fit mx-auto m-2">
+                <a-progress
+                  type="circle"
+                  :percent="microPercent"
+                  :stroke-color="{
+                    '0%': '#34B6ED',
+                    '100%': '#70C1B3'
+                  }"
+                  :format="(percent: number) => Math.floor(percent / 50) + '/2'"
+                  ><template #format="percent">
+                    <span>{{ percent }}</span>
+                  </template></a-progress
+                >
+              </div>
+              <div class="w-fit mx-auto micro-btn mt-4">
+                <a-button @click="download(results.microcursos.micro1)"
+                  ><div class="inline-flex items-center justify-center">
+                    <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
+                    {{ results.microcursos.micro1 }}
+                  </div></a-button
+                >
+              </div>
             </div>
             <div v-else>
-              <p class="font-bold text-red-500 text-center">No has asistido a ningún microcurso</p>
+              <a-alert message="No has asistido a ningún microcurso." type="error" show-icon />
+            </div>
+          </div>
+          <div v-else="activeTab === 'poster'">
+            <div v-if="results.poster">
+              <a-alert
+                message="Has presentado al menos un póster."
+                type="success"
+                class="mb-6"
+                show-icon
+              />
+              <p>
+                Hayas presentado los pósteres que hayas presentado, se descargan todos juntos en
+                formato ZIP.
+              </p>
+              <div class="mx-auto w-fit">
+                <a-button
+                  @click="download"
+                  shape="round"
+                  class="flex flex-row items-center justify-center mt-4"
+                >
+                  <template #icon>
+                    <IconDownload class="h-4 w-4 m-1" />
+                  </template>
+                  Descargar certificados
+                </a-button>
+              </div>
+            </div>
+            <div v-else>
+              <a-alert message="No has presentado ningún póster." type="error" show-icon />
             </div>
           </div>
           <template #actions>
@@ -248,7 +289,7 @@ import { tryit } from 'radash'
 import { message } from 'ant-design-vue'
 import { useEditionsStore } from '@/stores/editions'
 import { useUserStore } from '@/stores/user'
-import { IconLogout2, IconReload, IconDownload, IconArrowNarrowDown } from '@tabler/icons-vue'
+import { IconLogout2, IconReload, IconDownload } from '@tabler/icons-vue'
 
 interface FormState {
   nif: string
@@ -278,7 +319,7 @@ const results = ref<SearchResult>({
   poster: false
 })
 
-const available = ref(true)
+const available = computed(() => editionsStore.selected !== editionsStore.latest)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
@@ -287,7 +328,6 @@ const activeTab = ref('asistencia')
 const error = ref('')
 const attendPercent = ref(0)
 const microPercent = ref(0)
-const posterPercent = ref(0)
 
 const formState = reactive<FormState>({
   nif: '',
@@ -350,7 +390,7 @@ async function upPercent() {
     }
   } else if (activeTab.value === 'microcurso') {
     microPercent.value = 0
-    if (results.value.microcursos.doble) {
+    if (!results.value.microcursos.doble) {
       if (results.value.microcursos.micro1) {
         while (microPercent.value < 100) {
           await new Promise((resolve) => setTimeout(resolve, 10))
@@ -387,6 +427,7 @@ function reset() {
 }
 
 const onTabChange = (value: string) => {
+  error.value = ''
   activeTab.value = value
   upPercent()
 }
@@ -400,6 +441,7 @@ const reload = async () => {
 editionsStore.$subscribe(() => reset())
 
 async function download(micro?: string) {
+  error.value = ''
   let url = `${import.meta.env.VITE_API_URL}/${editionsStore.selected}/certificado/${activeTab.value}`
   if (activeTab.value === 'microcurso' && micro) {
     const microId = micro.replace(/[áóéíú:(),¿?.ñ¡!\-\/“”– ]/g, '_')
@@ -445,5 +487,12 @@ onBeforeMount(() => {
 .ant-tabs-nav-list {
   margin-left: auto;
   margin-right: auto;
+}
+.ant-progress-text {
+  color: inherit !important;
+}
+.micro-btn .ant-btn {
+  white-space: inherit;
+  height: fit-content;
 }
 </style>

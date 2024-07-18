@@ -202,6 +202,10 @@ const selectorHandleOk = () => {
   showSelectorModal.value = false
 }
 
+editionsStore.$subscribe(() => {
+  currentEdition.value = editionsStore.selected
+})
+
 onMounted(() => {
   currentEdition.value = editionsStore.selected
 })
