@@ -1,17 +1,14 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-100">
+  <div v-auto-animate class="min-h-screen flex flex-col bg-gray-100">
     <header>
       <TopNav :title="'Descarga de certificados de asistencia'" />
     </header>
+    <div v-if="error" class="m-4 max-w-[80%] mx-auto">
+      <a-alert :message="error" :type="notFound ? 'warning' : 'error'" show-icon closable />
+    </div>
     <main class="flex flex-col flex-grow items-center md:justify-center">
       <div v-if="!available">
-        <a-alert
-          message="Apartado en desarrollo, aun no disponible."
-          type="warning"
-          style="font-size: 1.125rem"
-          class="m-8"
-          show-icon
-        />
+        <a-alert message="Apartado aun no disponible." type="warning" class="m-8" show-icon />
       </div>
       <div v-else-if="!results.id">
         <a-spin v-auto-animate :spinning="loading">
@@ -29,7 +26,7 @@
               :label-col="{ span: 32 }"
               :wrapper-col="{ span: 32 }"
               @finish="onSubmit"
-              @finishFailed="onFinishFailed"
+              @finishFailed="reset"
             >
               <a-form-item
                 label="Correo electrónico"
@@ -68,15 +65,178 @@
                 >
               </a-form-item>
             </a-form>
-            <a-alert
-              v-if="error.busqueda"
-              :message="error.busqueda"
-              :type="notFound ? 'warning' : 'error'"
-              show-icon
-            /> </a-card
-        ></a-spin>
+          </a-card></a-spin
+        >
       </div>
-      <div v-else>a</div>
+      <div v-else>
+        <a-card
+          v-auto-animate
+          class="m-8 max-w-[30rem]"
+          title="Certificados disponibles"
+          :bordered="false"
+          :headStyle="{
+            'font-size': '1.35rem',
+            'text-align': 'center'
+          }"
+          :tab-list="tabList"
+          :active-tab-key="activeTab"
+          @tabChange="(key: string) => onTabChange(key)"
+        >
+          <div v-if="loading" class="flex items-center justify-center">
+            <a-spin tip="Cargando..." />
+          </div>
+          <div v-else-if="activeTab === 'asistencia'">
+            <a-alert
+              v-if="results.asistencia < 80.0"
+              message="No has alcanzado el porcentaje mínimo de asistencia"
+              type="error"
+              class="mb-6"
+              show-icon
+            />
+            <a-alert
+              v-else
+              message="Has alcanzado el porcentaje mínimo de asistencia"
+              type="success"
+              class="mb-6"
+              show-icon
+            />
+            <div class="w-fit mx-auto m-2">
+              <a-progress
+                type="circle"
+                :percent="attendPercent"
+                :stroke-color="{
+                  '0%': '#34B6ED',
+                  '100%': '#70C1B3'
+                }"
+                :format="(percent: number) => percent + '%'"
+                ><template #format="percent">
+                  <span>{{ percent }}</span>
+                </template></a-progress
+              >
+            </div>
+            <p class="font-bold mb-2 text-center">
+              Tu porcentaje de asistencia es del {{ Math.trunc(results.asistencia * 100) / 100 }}%
+            </p>
+            <div v-if="results.asistencia >= 80.0" class="mx-auto w-fit">
+              <a-button
+                @click="download"
+                type="primary"
+                shape="round"
+                class="flex flex-row items-center justify-center mt-4"
+              >
+                <template #icon>
+                  <IconDownload class="h-4 w-4 m-1" />
+                </template>
+                Descargar certificado
+              </a-button>
+            </div>
+          </div>
+          <div v-else-if="activeTab === 'microcurso'">
+            <div v-if="!results.microcursos.doble && results.microcursos.micro1">
+              <a-alert
+                message="Has asistido a 1 microcurso de dos días."
+                type="success"
+                class="mb-6"
+                show-icon
+              />
+              <div class="w-fit mx-auto m-2">
+                <a-progress
+                  type="circle"
+                  :percent="microPercent"
+                  :stroke-color="{
+                    '0%': '#34B6ED',
+                    '100%': '#70C1B3'
+                  }"
+                  :format="(percent: number) => Math.floor(percent / 100) + '/1'"
+                  ><template #format="percent">
+                    <span>{{ percent }}</span>
+                  </template></a-progress
+                >
+              </div>
+              <div class="w-fit mx-auto">
+                <a-button @click="download(results.microcursos.micro1)" type="text"
+                  ><div class="inline-flex items-center justify-center">
+                    <IconDownload class="w-4 h-4" />
+                    {{ results.microcursos.micro1 }}
+                  </div></a-button
+                >
+              </div>
+            </div>
+            <div
+              v-else-if="
+                results.microcursos.doble &&
+                results.microcursos.micro1 &&
+                results.microcursos.micro2
+              "
+            >
+              <a-alert
+                message="Has asistido a 2 microcursos de un día."
+                type="success"
+                class="mb-6"
+                show-icon
+              />
+              <div class="w-fit mx-auto m-2">
+                <a-progress
+                  type="circle"
+                  :percent="microPercent"
+                  :stroke-color="{
+                    '0%': '#34B6ED',
+                    '100%': '#70C1B3'
+                  }"
+                  :format="(percent: number) => Math.floor(percent / 50) + '/2'"
+                  ><template #format="percent">
+                    <span>{{ percent }}</span>
+                  </template></a-progress
+                >
+              </div>
+              <div class="w-fit mx-auto">
+                <a-button @click="download(results.microcursos.micro1)" type="text"
+                  ><div class="inline-flex items-center justify-center">
+                    <IconDownload class="w-4 h-4" />
+                    {{ results.microcursos.micro1 }}
+                  </div></a-button
+                >
+              </div>
+              <div class="w-fit mx-auto">
+                <a-button @click="download(results.microcursos.micro2)" type="text"
+                  ><div class="inline-flex items-center justify-center">
+                    <IconDownload class="w-4 h-4" />
+                    <p class="max-w-full">{{ results.microcursos.micro2 }}</p>
+                  </div></a-button
+                >
+              </div>
+            </div>
+            <div v-else-if="results.microcursos.doble && results.microcursos.micro1">
+              <p class="font-bold mb-2 text-center">Has asistido a 1/2 microcursos de un día:</p>
+              <p class="font-bold mb-2 text-center">
+                {{ results.microcursos.micro1 }}
+              </p>
+              <a-button
+                @click="download(results.microcursos.micro1)"
+                type="primary"
+                shape="round"
+                class="flex flex-row items-center justify-center mt-4"
+              >
+                <template #icon>
+                  <IconDownload class="h-4 w-4 m-1" />
+                </template>
+                Descargar certificado
+              </a-button>
+            </div>
+            <div v-else>
+              <p class="font-bold text-red-500 text-center">No has asistido a ningún microcurso</p>
+            </div>
+          </div>
+          <template #actions>
+            <span @click="reset" class="flex flex-row items-center justify-center"
+              ><IconLogout2 class="h-6 m-2" />Volver</span
+            >
+            <span @click="reload" class="flex flex-row items-center justify-center"
+              ><IconReload class="h-6 m-2" />Recargar</span
+            >
+          </template>
+        </a-card>
+      </div>
     </main>
     <Footer />
   </div>
@@ -88,6 +248,7 @@ import { tryit } from 'radash'
 import { message } from 'ant-design-vue'
 import { useEditionsStore } from '@/stores/editions'
 import { useUserStore } from '@/stores/user'
+import { IconLogout2, IconReload, IconDownload, IconArrowNarrowDown } from '@tabler/icons-vue'
 
 interface FormState {
   nif: string
@@ -117,11 +278,16 @@ const results = ref<SearchResult>({
   poster: false
 })
 
-const available = ref(false)
+const available = ref(true)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
 const notFound = ref(false)
+const activeTab = ref('asistencia')
+const error = ref('')
+const attendPercent = ref(0)
+const microPercent = ref(0)
+const posterPercent = ref(0)
 
 const formState = reactive<FormState>({
   nif: '',
@@ -129,63 +295,83 @@ const formState = reactive<FormState>({
   remember: false
 })
 
-const error = ref({
-  busqueda: '',
-  asistencia: '',
-  microcursos: '',
-  poster: ''
-})
+const tabList = [
+  {
+    key: 'asistencia',
+    tab: 'Asistencia'
+  },
+  {
+    key: 'microcurso',
+    tab: 'Microcursos'
+  },
+  {
+    key: 'poster',
+    tab: 'Póster'
+  }
+]
 
-async function onSubmit() {
+async function onSubmit(doReset = true) {
   loading.value = true
-  notFound.value = false
-  results.value = {
-    id: null,
-    asistencia: 0,
-    microcursos: {
-      doble: false,
-      micro1: '',
-      micro2: ''
-    },
-    poster: false
-  }
-  error.value = {
-    busqueda: '',
-    asistencia: '',
-    microcursos: '',
-    poster: ''
-  }
+  if (doReset) reset()
   const [err, res] = await tryit(fetch)(
     `${import.meta.env.VITE_API_URL}/${editionsStore.selected}/consulta/certificado?nif=${formState.nif.trim()}&email=${formState.email.trim()}`
   )
   if (err) {
-    error.value.busqueda =
+    error.value =
       'No se ha podido conectar con el servidor. Conctacta con nosotros por correo info@biociencias.es'
-    message.error('No se ha podido conectar con el servidor.')
   } else {
     if (res.status === 200) {
       results.value = await res.json()
+      upPercent()
       if (formState.remember) {
         usersStore.email = formState.email
       } else {
         usersStore.email = null
       }
-      message.success('Usuario encontrado.')
+      if (doReset) message.success('Usuario encontrado.')
     } else if (res.status === 404) {
       notFound.value = true
-      error.value.busqueda =
+      error.value =
         'No se ha encontrado ningún usuario para el NIF y correo electrónico proporcionados. Si crees que es un error, conctacta con nosotros por correo info@biociencias.es'
-      message.warning('No se ha encontrado ningún usuario.')
     } else {
-      error.value.busqueda =
+      error.value =
         'Respuesta inesperada del servidor. Conctacta con nosotros por correo info@biociencias.es'
-      message.error('Respuesta inesperada del servidor.')
     }
   }
   loading.value = false
 }
 
-function onFinishFailed() {
+async function upPercent() {
+  if (activeTab.value === 'asistencia') {
+    attendPercent.value = 0
+    while (attendPercent.value < Math.trunc(results.value.asistencia * 100) / 100) {
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      attendPercent.value += 1
+    }
+  } else if (activeTab.value === 'microcurso') {
+    microPercent.value = 0
+    if (results.value.microcursos.doble) {
+      if (results.value.microcursos.micro1) {
+        while (microPercent.value < 100) {
+          await new Promise((resolve) => setTimeout(resolve, 10))
+          microPercent.value += 1
+        }
+      }
+    } else {
+      const maxPercent =
+        (results.value.microcursos.micro1 ? 50 : 0) + (results.value.microcursos.micro2 ? 50 : 0)
+      while (microPercent.value < maxPercent) {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        microPercent.value += 1
+      }
+    }
+  } else {
+    // Póster
+    return
+  }
+}
+
+function reset() {
   notFound.value = false
   results.value = {
     id: null,
@@ -197,11 +383,53 @@ function onFinishFailed() {
     },
     poster: false
   }
-  error.value = {
-    busqueda: '',
-    asistencia: '',
-    microcursos: '',
-    poster: ''
+  error.value = ''
+}
+
+const onTabChange = (value: string) => {
+  activeTab.value = value
+  upPercent()
+}
+
+const reload = async () => {
+  loading.value = true
+  await onSubmit(false)
+  loading.value = false
+}
+
+editionsStore.$subscribe(() => reset())
+
+async function download(micro?: string) {
+  let url = `${import.meta.env.VITE_API_URL}/${editionsStore.selected}/certificado/${activeTab.value}`
+  if (activeTab.value === 'microcurso' && micro) {
+    const microId = micro.replace(/[áóéíú:(),¿?.ñ¡!\-\/“”– ]/g, '_')
+    url += '/' + microId
+  }
+
+  url += '/' + results.value.id
+
+  if (activeTab.value === 'asistencia' || activeTab.value === 'microcurso') {
+    url += '.pdf'
+  } else {
+    url += '.zip'
+  }
+
+  const [err, res] = await tryit(fetch)(url)
+
+  if (err) {
+    error.value =
+      'No se ha podido conectar con el servidor. Conctacta con nosotros por correo info@biociencias.es'
+  } else {
+    if (res.status === 200) {
+      window.open(url, '_blank')
+      message.success('Certificado descargado.')
+    } else if (res.status === 403) {
+      error.value =
+        'No cumples los requisitos para obtener este certificado. Si crees que se trata de un error, conctacta con nosotros por correo info@biociencias.es'
+    } else {
+      error.value =
+        'Respuesta inesperada del servidor. Conctacta con nosotros por correo info@biociencias.es'
+    }
   }
 }
 
@@ -212,3 +440,10 @@ onBeforeMount(() => {
   }
 })
 </script>
+
+<style>
+.ant-tabs-nav-list {
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>

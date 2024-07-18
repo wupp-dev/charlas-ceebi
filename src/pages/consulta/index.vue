@@ -5,13 +5,7 @@
     </header>
     <main v-auto-animate class="flex flex-col flex-grow items-center md:justify-center">
       <div v-if="!available">
-        <a-alert
-          message="Apartado aun no disponible."
-          type="warning"
-          style="font-size: 1.125rem"
-          class="m-8"
-          show-icon
-        />
+        <a-alert message="Apartado aun no disponible." type="warning" class="m-8" show-icon />
       </div>
       <div v-else class="max-md:mt-10 w-6/12 max-w-[35rem] min-w-[20rem]">
         <a-spin :spinning="loading">
@@ -23,6 +17,7 @@
             :status="error ? 'error' : ''"
             :disabled="loading"
             @search="onSubmit"
+            @keyup.enter="onSubmit"
           >
             <template #enterButton>
               <a-button type="primary">Buscar</a-button>

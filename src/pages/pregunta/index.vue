@@ -99,7 +99,6 @@
       <a-alert
         message="Edición no soportada, cambia a la edición actual para poder ver y hacer preguntas."
         type="warning"
-        style="font-size: 1.125rem"
         class="m-8"
         show-icon
       />
