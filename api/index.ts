@@ -7,6 +7,7 @@ import path from 'path'
 import csvParser from 'csv-parser'
 import consoleStamp from 'console-stamp'
 import http from 'http'
+import { parseISO } from 'date-fns/parseISO'
 
 consoleStamp(console, {
   format: ':date(yyyy-mm-dd HH:MM:ss)'
@@ -131,7 +132,17 @@ app.use(express.json())
 app.use(express.static('dist'))
 const server = http.createServer(app)
 
-async function checkAttendance(edition: string, id: string): Promise<number | null> {
+type Attendance = {
+  time: Date
+  events: string[]
+  eventHours: number[]
+  hours: number
+}
+
+async function checkAttendance(
+  edition: string,
+  id: string
+): Promise<{ sessions: Attendance[]; percent: number } | null> {
   const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null
   if (!supabase) {
     console.error(`Edition "${edition}" not found!`)
@@ -142,33 +153,35 @@ async function checkAttendance(edition: string, id: string): Promise<number | nu
   const res = await fetch(fileURL.publicUrl)
   const attendanceSchema = await res.json()
 
-  const { data, error } = await supabase
-    .from('attendance')
-    .select('attendant_id,session,id')
-    .eq('attendant_id', id)
+  const { data, error } = await supabase.from('attendance').select('*').eq('attendant_id', id)
 
-  if (error) {
-    console.error(`Something went wrong while trying to check attendance for id: ${id}`)
-    return null
-  }
-
-  if (data) {
-    const asistencia = Math.round(
+  if (!error && data) {
+    const items: Attendance[] = data?.map((att) => ({
+      time: parseISO(att.date || ''),
+      events: att.event
+        ? [att.event]
+        : // @ts-ignore
+          attendanceSchema.find((schema) => schema.name === att.session)?.events,
+      // @ts-ignore
+      eventHours: attendanceSchema.find((schema) => schema.name === att.session)?.eventHours,
+      // @ts-ignore
+      hours: attendanceSchema.find((schema) => schema.name === att.session)?.hours
+    }))
+    const percent = Math.round(
       (Math.min(
         25,
-        data
-          .map((att) => ({
-            // @ts-ignore
-            hours: attendanceSchema.find((schema) => schema.name === att.session)?.hours
-          }))
-          .reduce((acc, curr) => acc + curr.hours, 0)
+        items
+          .map((item) => item.hours)
+          .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
       ) /
         25) *
         100
     )
-    return isNaN(asistencia) ? 0 : asistencia
+    return { sessions: items, percent: isNaN(percent) ? 0 : percent }
+  } else {
+    console.error(`Something went wrong while trying to check attendance for id: ${id}`)
+    return null
   }
-  return null
 }
 
 async function checkMicro(edition: string, id: string): Promise<string[] | null> {
@@ -337,7 +350,7 @@ app.get('/api/:edition/consulta/certificado', async (req, res) => {
       .json({ error: 'An error occurred when trying to match the identity document and email!' })
   }
 
-  const asistencia = isOnline ? 100 : await checkAttendance(edition, id)
+  const asistencia = await checkAttendance(edition, id)
   const microcursos = await checkMicro(edition, id)
   const poster = checkPoster(edition, id)
 
@@ -399,14 +412,12 @@ app.get('/api/:edition/certificado/:certificate(*)', async (req, res) => {
 
   if (certType === 'asistencia') {
     if (isIdValid) {
-      const asistencia = (await isIDOnline(edition, rawId[0]))
-        ? 100
-        : await checkAttendance(edition, rawId[0])
+      const asistencia = await checkAttendance(edition, rawId[0])
       if (asistencia === null) {
         return res
           .status(500)
           .json({ error: 'Something went wrong while trying to achieve attendance data' })
-      } else if (asistencia < 80) {
+      } else if (asistencia.percent < 80) {
         return res.status(403).json({ error: "User didn't reach minimun attendance" })
       }
       try {

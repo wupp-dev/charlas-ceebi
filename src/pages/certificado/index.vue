@@ -6,6 +6,14 @@
     <div v-if="error" class="m-4 max-w-[80%] mx-auto">
       <a-alert :message="error" :type="notFound ? 'warning' : 'error'" show-icon />
     </div>
+    <div v-if="available && results.id" class="m-4 max-w-[80%] mx-auto">
+      <a-alert
+        message="Los certificados aun no están disponibles para descargar."
+        type="warning"
+        show-icon
+        closable
+      />
+    </div>
     <main class="flex flex-col flex-grow items-center md:justify-center">
       <div v-if="!available">
         <a-alert message="Apartado aun no disponible." type="warning" class="my-8" show-icon />
@@ -87,7 +95,7 @@
           </div>
           <div v-else-if="activeTab === 'asistencia'">
             <a-alert
-              v-if="results.asistencia < 80.0"
+              v-if="results.asistencia.percent < 80.0"
               message="No has alcanzado el porcentaje mínimo de asistencia"
               type="error"
               class="mb-6"
@@ -115,11 +123,48 @@
               >
             </div>
             <p class="font-bold text-center">
-              Tu porcentaje de asistencia es del {{ Math.trunc(results.asistencia * 100) / 100 }}%
+              Has asistido a {{ hoursDone }} horas de un total de 25 horas.
             </p>
-            <div v-if="results.asistencia >= 80.0" class="mx-auto w-fit">
+            <div v-if="results.asistencia.sessions.length > 0" class="mx-auto w-fit">
+              <a-button
+                class="flex flex-row items-center justify-center mt-4"
+                shape="round"
+                @click="modalVisible = true"
+              >
+                <template #icon>
+                  <IconCalendarCheck class="h-4 w-4 m-1" />
+                </template>
+                Ver eventos asistidos
+              </a-button>
+              <a-modal
+                v-model:open="modalVisible"
+                title="Eventos a los que has asistido"
+                centered
+                footer=""
+                @ok="modalVisible = false"
+              >
+                <div
+                  v-for="session in results.asistencia.sessions"
+                  :key="session.time"
+                  class="flex flex-col"
+                >
+                  <div
+                    v-for="(event, index) in session.events"
+                    :key="event"
+                    class="flex flex-row items-center my-2"
+                  >
+                    <span class="text-primary font-bold min-w-10 mr-2 text-start"
+                      >{{ (session.eventHours || ['-', '-', '-'])[index] }}h</span
+                    >
+                    {{ event }}
+                  </div>
+                </div>
+              </a-modal>
+            </div>
+            <div v-if="results.asistencia.percent >= 80.0" class="mx-auto w-fit">
               <a-button
                 @click="download"
+                :disabled="!downloadable"
                 shape="round"
                 class="flex flex-row items-center justify-center mt-4"
               >
@@ -153,7 +198,7 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro1)"
+                <a-button @click="download(results.microcursos.micro1)" :disabled="!downloadable"
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
@@ -189,7 +234,7 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro1)"
+                <a-button @click="download(results.microcursos.micro1)" :disabled="!downloadable"
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
@@ -197,7 +242,7 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro2)"
+                <a-button @click="download(results.microcursos.micro2)" :disabled="!downloadable"
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro2 }}
@@ -227,7 +272,7 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro1)"
+                <a-button @click="download(results.microcursos.micro1)" :disabled="!downloadable"
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
@@ -240,7 +285,14 @@
             </div>
           </div>
           <div v-else="activeTab === 'poster'">
-            <div v-if="results.poster">
+            <div v-if="!downloadable">
+              <a-alert
+                message="La información sobre quién ha presentado póster aun no está actualizada."
+                type="warning"
+                show-icon
+              />
+            </div>
+            <div v-else-if="results.poster">
               <a-alert
                 message="Has presentado al menos un póster."
                 type="success"
@@ -254,6 +306,7 @@
               <div class="mx-auto w-fit">
                 <a-button
                   @click="download"
+                  :disabled="!downloadable"
                   shape="round"
                   class="flex flex-row items-center justify-center mt-4"
                 >
@@ -289,7 +342,7 @@ import { tryit } from 'radash'
 import { message } from 'ant-design-vue'
 import { useEditionsStore } from '@/stores/editions'
 import { useUserStore } from '@/stores/user'
-import { IconLogout2, IconReload, IconDownload } from '@tabler/icons-vue'
+import { IconLogout2, IconReload, IconDownload, IconCalendarCheck } from '@tabler/icons-vue'
 
 interface FormState {
   nif: string
@@ -297,9 +350,19 @@ interface FormState {
   remember: boolean
 }
 
+type Attendance = {
+  sessions: {
+    time: string
+    events: string[]
+    eventHours: number[]
+    hours: number
+  }[]
+  percent: number
+}
+
 type SearchResult = {
   id: string | null
-  asistencia: number
+  asistencia: Attendance
   microcursos: {
     doble: boolean
     micro1: string
@@ -310,7 +373,10 @@ type SearchResult = {
 
 const results = ref<SearchResult>({
   id: null,
-  asistencia: 0,
+  asistencia: {
+    sessions: [],
+    percent: 0
+  },
   microcursos: {
     doble: false,
     micro1: '',
@@ -319,7 +385,15 @@ const results = ref<SearchResult>({
   poster: false
 })
 
+const hoursDone = computed(
+  () =>
+    results.value.asistencia.sessions
+      .map((item) => item.hours)
+      .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
+)
+
 const available = ref(true)
+const downloadable = computed(() => editionsStore.selected !== editionsStore.latest)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
@@ -328,6 +402,7 @@ const activeTab = ref('asistencia')
 const error = ref('')
 const attendPercent = ref(0)
 const microPercent = ref(0)
+const modalVisible = ref(false)
 
 const formState = reactive<FormState>({
   nif: '',
@@ -384,7 +459,7 @@ async function onSubmit(doReset = true) {
 async function upPercent() {
   if (activeTab.value === 'asistencia') {
     attendPercent.value = 0
-    while (attendPercent.value < Math.trunc(results.value.asistencia * 100) / 100) {
+    while (attendPercent.value < Math.trunc(results.value.asistencia.percent * 100) / 100) {
       await new Promise((resolve) => setTimeout(resolve, 20))
       attendPercent.value += 1
     }
@@ -415,7 +490,10 @@ function reset() {
   notFound.value = false
   results.value = {
     id: null,
-    asistencia: 0,
+    asistencia: {
+      sessions: [],
+      percent: 0
+    },
     microcursos: {
       doble: false,
       micro1: '',
