@@ -420,7 +420,7 @@ const hoursDone = computed(
       .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
 )
 
-const available = ref(false)
+const available = ref(true)
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
 >(() =>
