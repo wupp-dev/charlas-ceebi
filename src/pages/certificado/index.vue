@@ -319,7 +319,7 @@ const results = ref<SearchResult>({
   poster: false
 })
 
-const available = computed(() => editionsStore.selected !== editionsStore.latest)
+const available = ref(true)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
