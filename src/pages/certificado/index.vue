@@ -392,7 +392,7 @@ const hoursDone = computed(
       .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
 )
 
-const available = ref(true)
+const available = ref(false)
 const downloadable = computed(() => editionsStore.selected !== editionsStore.latest)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
