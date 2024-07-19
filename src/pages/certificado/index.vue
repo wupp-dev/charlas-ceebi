@@ -8,7 +8,15 @@
     </div>
     <div v-if="available && results.id" class="m-4 max-w-[80%] mx-auto">
       <a-alert
+        v-if="!downloadable"
         message="Los certificados aun no están disponibles para descargar."
+        type="warning"
+        show-icon
+        closable
+      />
+      <a-alert
+        v-else-if="typeof downloadable === 'object'"
+        message="Algunos certificados aun no están disponibles para descargar."
         type="warning"
         show-icon
         closable
@@ -164,7 +172,9 @@
             <div v-if="results.asistencia.percent >= 80.0" class="mx-auto w-fit">
               <a-button
                 @click="download"
-                :disabled="!downloadable"
+                :disabled="
+                  !downloadable || (typeof downloadable === 'object' && downloadable.asistencia)
+                "
                 shape="round"
                 class="flex flex-row items-center justify-center mt-4"
               >
@@ -198,7 +208,11 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro1)" :disabled="!downloadable"
+                <a-button
+                  @click="download(results.microcursos.micro1)"
+                  :disabled="
+                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                  "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
@@ -234,7 +248,11 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro1)" :disabled="!downloadable"
+                <a-button
+                  @click="download(results.microcursos.micro1)"
+                  :disabled="
+                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                  "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
@@ -242,7 +260,11 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro2)" :disabled="!downloadable"
+                <a-button
+                  @click="download(results.microcursos.micro2)"
+                  :disabled="
+                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                  "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro2 }}
@@ -272,7 +294,11 @@
                 >
               </div>
               <div class="w-fit mx-auto micro-btn mt-4">
-                <a-button @click="download(results.microcursos.micro1)" :disabled="!downloadable"
+                <a-button
+                  @click="download(results.microcursos.micro1)"
+                  :disabled="
+                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                  "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
                     {{ results.microcursos.micro1 }}
@@ -306,7 +332,9 @@
               <div class="mx-auto w-fit">
                 <a-button
                   @click="download"
-                  :disabled="!downloadable"
+                  :disabled="
+                    !downloadable || (typeof downloadable === 'object' && downloadable.poster)
+                  "
                   shape="round"
                   class="flex flex-row items-center justify-center mt-4"
                 >
@@ -393,7 +421,13 @@ const hoursDone = computed(
 )
 
 const available = ref(false)
-const downloadable = computed(() => editionsStore.selected !== editionsStore.latest)
+const downloadable = computed<
+  boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
+>(() =>
+  editionsStore.selected !== editionsStore.latest
+    ? true
+    : { asistencia: true, microcursos: false, poster: false }
+)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
