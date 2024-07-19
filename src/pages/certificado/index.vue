@@ -423,11 +423,7 @@ const hoursDone = computed(
 const available = ref(true)
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
->(() =>
-  editionsStore.selected !== editionsStore.latest
-    ? true
-    : { asistencia: true, microcursos: false, poster: false }
-)
+>(() => editionsStore.selected !== editionsStore.latest)
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
