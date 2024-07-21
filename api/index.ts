@@ -167,16 +167,11 @@ async function checkAttendance(
       // @ts-ignore
       hours: attendanceSchema.find((schema) => schema.name === att.session)?.hours
     }))
+    const hours = items
+      .map((item) => item.hours)
+      .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
     const percent = Math.round(
-      (Math.min(
-        25,
-        (items
-          .map((item) => item.hours)
-          .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number) +
-          (edition === 'ceebi-iii' ? 0.5 : 0)
-      ) /
-        25) *
-        100
+      (Math.min(25, hours + (edition === 'ceebi-iii' && hours > 0 ? 0.5 : 0)) / 25) * 100
     )
     return { sessions: items, percent: isNaN(percent) ? 0 : percent }
   } else {
