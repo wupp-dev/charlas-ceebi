@@ -170,9 +170,10 @@ async function checkAttendance(
     const percent = Math.round(
       (Math.min(
         25,
-        items
+        (items
           .map((item) => item.hours)
-          .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
+          .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number) +
+          (edition === 'ceebi-iii' ? 0.5 : 0)
       ) /
         25) *
         100
