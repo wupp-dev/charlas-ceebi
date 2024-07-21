@@ -490,7 +490,7 @@ async function upPercent() {
   if (activeTab.value === 'asistencia') {
     attendPercent.value = 0
     while (attendPercent.value < Math.trunc(results.value.asistencia.percent * 100) / 100) {
-      await new Promise((resolve) => setTimeout(resolve, 20))
+      await new Promise((resolve) => setTimeout(resolve, 10))
       attendPercent.value += 1
     }
   } else if (activeTab.value === 'microcurso') {
@@ -498,7 +498,7 @@ async function upPercent() {
     if (!results.value.microcursos.doble) {
       if (results.value.microcursos.micro1) {
         while (microPercent.value < 100) {
-          await new Promise((resolve) => setTimeout(resolve, 10))
+          await new Promise((resolve) => setTimeout(resolve, 5))
           microPercent.value += 1
         }
       }
@@ -506,7 +506,7 @@ async function upPercent() {
       const maxPercent =
         (results.value.microcursos.micro1 ? 50 : 0) + (results.value.microcursos.micro2 ? 50 : 0)
       while (microPercent.value < maxPercent) {
-        await new Promise((resolve) => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 5))
         microPercent.value += 1
       }
     }
