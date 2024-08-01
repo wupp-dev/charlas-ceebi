@@ -173,7 +173,7 @@
               <a-button
                 @click="download"
                 :disabled="
-                  !downloadable || (typeof downloadable === 'object' && downloadable.asistencia)
+                  !downloadable || (typeof downloadable === 'object' && !downloadable.asistencia)
                 "
                 shape="round"
                 class="flex flex-row items-center justify-center mt-4"
@@ -211,7 +211,7 @@
                 <a-button
                   @click="download(results.microcursos.micro1)"
                   :disabled="
-                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                    !downloadable || (typeof downloadable === 'object' && !downloadable.microcursos)
                   "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
@@ -251,7 +251,7 @@
                 <a-button
                   @click="download(results.microcursos.micro1)"
                   :disabled="
-                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                    !downloadable || (typeof downloadable === 'object' && !downloadable.microcursos)
                   "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
@@ -263,7 +263,7 @@
                 <a-button
                   @click="download(results.microcursos.micro2)"
                   :disabled="
-                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                    !downloadable || (typeof downloadable === 'object' && !downloadable.microcursos)
                   "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
@@ -297,7 +297,7 @@
                 <a-button
                   @click="download(results.microcursos.micro1)"
                   :disabled="
-                    !downloadable || (typeof downloadable === 'object' && downloadable.microcursos)
+                    !downloadable || (typeof downloadable === 'object' && !downloadable.microcursos)
                   "
                   ><div class="inline-flex items-center justify-center">
                     <IconDownload class="w-4 h-4 min-h-4 min-w-4 mr-2" />
@@ -333,7 +333,7 @@
                 <a-button
                   @click="download"
                   :disabled="
-                    !downloadable || (typeof downloadable === 'object' && downloadable.poster)
+                    !downloadable || (typeof downloadable === 'object' && !downloadable.poster)
                   "
                   shape="round"
                   class="flex flex-row items-center justify-center mt-4"
@@ -423,7 +423,13 @@ const hoursDone = computed(
 const available = ref(true)
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
->(() => editionsStore.selected !== editionsStore.latest)
+>(() => {
+  return {
+    asistencia: true,
+    microcursos: editionsStore.selected !== editionsStore.latest,
+    poster: true
+  }
+})
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
