@@ -415,9 +415,10 @@ const results = ref<SearchResult>({
 
 const hoursDone = computed(
   () =>
-    results.value.asistencia.sessions
+    (results.value.asistencia.sessions
       .map((item) => item.hours)
-      .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number
+      .reduce((prev, curr) => (prev ?? 0) + (curr ?? 0), 0) as number) +
+    (editionsStore.selected === 'ceebi-iii' && results.value.asistencia.percent > 0 ? 0.5 : 0)
 )
 
 const available = ref(true)
