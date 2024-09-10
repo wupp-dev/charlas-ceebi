@@ -15,6 +15,13 @@
         closable
       />
       <a-alert
+        v-else-if="notAvailableTxt"
+        :message="notAvailableTxt"
+        type="warning"
+        show-icon
+        closable
+      />
+      <a-alert
         v-else-if="typeof downloadable === 'object'"
         message="Algunos certificados aun no están disponibles para descargar."
         type="warning"
@@ -424,13 +431,8 @@ const hoursDone = computed(
 const available = ref(true)
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
->(() => {
-  return {
-    asistencia: true,
-    microcursos: editionsStore.selected !== editionsStore.latest,
-    poster: true
-  }
-})
+>(() => true)
+const notAvailableTxt = ref('Los certificados para los asistentes online aun no están disponibles.')
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
