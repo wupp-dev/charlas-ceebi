@@ -28,6 +28,12 @@ type UserDataRow = {
   email: string
 }
 
+type OnlineDataRow = {
+  email: string
+  percent: string
+  id: string
+}
+
 const supabaseUrl23 = process.env.SUPABASE_URL_2023 ?? ''
 const supabaseKey23 = process.env.SUPABASE_KEY_2023 ?? ''
 console.log(`Connecting to ${supabaseUrl23}...`)
@@ -43,6 +49,8 @@ console.log('Connected!')
 const EDITIONS = fs.readdirSync('./private').filter((file) => {
   return fs.statSync(path.join('./private', file)).isDirectory()
 })
+
+console.info('editions', EDITIONS)
 
 /**
  * Los nombres de los Microcursos que duran dos días
@@ -70,6 +78,13 @@ const MICROCURSOS_DOS_DIAS_24 = [
 
 const microRegEx = /^Microcurso "([\w\sáóéíú:(),¿?.ñ¡!\-\/“”–]+)"$/m
 
+/**
+ * Finds a match in the users-data.csv file of the given edition for the given NIF and email.
+ * @param edition The edition to search in.
+ * @param nif The NIF to search for.
+ * @param email The email to search for.
+ * @returns A promise that resolves with an array containing the ID of the user and a boolean indicating whether the user is online, or null if no match was found.
+ */
 function findNifMailMatch(
   edition: string,
   nif: string,
@@ -139,10 +154,50 @@ type Attendance = {
   hours: number
 }
 
+function getOnlinePercentFromCSV(edition: string, id: string): Promise<number | null> {
+  return new Promise(async (resolve, reject) => {
+    const filePath = `./private/${edition}/online-data.csv`
+
+    try {
+      await fs.promises.access(filePath, fs.constants.F_OK)
+    } catch (err) {
+      console.error(`File "${filePath}" does not exist.`)
+      return reject(new Error(`File "${filePath}" does not exist.`))
+    }
+
+    fs.createReadStream(filePath)
+      .pipe(csvParser())
+      .on('data', (row: OnlineDataRow) => {
+        if (row.id.trim().toLowerCase() === id) {
+          const percent = parseFloat(row.percent)
+          if (isNaN(percent)) reject(new Error(`Invalid percent: ${row.percent}`))
+          else resolve(percent)
+        }
+      })
+      .on('error', (err) => {
+        console.error(err)
+        reject(err)
+      })
+      .on('end', () => resolve(null))
+  })
+}
+
+async function getOnlineAttendance(
+  edition: string,
+  id: string
+): Promise<{ sessions: []; percent: number } | null> {
+  return {
+    sessions: [],
+    percent: Math.min(((await getOnlinePercentFromCSV(edition, id)) ?? 0) + 10, 100)
+  }
+}
+
 async function checkAttendance(
   edition: string,
   id: string
 ): Promise<{ sessions: Attendance[]; percent: number } | null> {
+  if (await isIDOnline(edition, id)) return await getOnlineAttendance(edition, id)
+
   const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null
   if (!supabase) {
     console.error(`Edition "${edition}" not found!`)
