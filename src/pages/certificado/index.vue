@@ -137,9 +137,12 @@
                 </template></a-progress
               >
             </div>
-            <p class="font-bold text-center">
+
+            <p class="font-bold text-center" v-if="hoursDone">
               Has asistido a {{ hoursDone }} horas de un total de 25 horas.
             </p>
+            <p v-else class="text-center">No tienes asistencia presencial resgistrada.</p>
+
             <div v-if="results.asistencia.sessions.length > 0" class="mx-auto w-fit">
               <a-button
                 class="flex flex-row items-center justify-center mt-4"
@@ -432,7 +435,7 @@ const available = ref(true)
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
 >(() => true)
-const notAvailableTxt = ref('Los certificados para los asistentes online aun no están disponibles.')
+const notAvailableTxt = ref(null) // 'Los certificados para los asistentes online aun no están disponibles.')
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
