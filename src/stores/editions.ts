@@ -4,8 +4,8 @@ import { editions } from './editionsData'
 export const useEditionsStore = defineStore('editions', {
   state: () => ({
     editions: editions,
-    selected: 'ceebi-iii',
-    latest: 'ceebi-iii'
+    selected: 'ceebi-iv',
+    latest: 'ceebi-iv'
   }),
   persist: {
     paths: ['selected']

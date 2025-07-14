@@ -40,6 +40,12 @@ console.log(`Connecting to ${supabaseUrl24}...`)
 const supabase24 = createClient(supabaseUrl24, supabaseKey24, { auth: { persistSession: false } })
 console.log('Connected!')
 
+const supabaseUrl25 = process.env.SUPABASE_URL_2025 ?? ''
+const supabaseKey25 = process.env.SUPABASE_KEY_2025 ?? ''
+console.log(`Connecting to ${supabaseUrl25}...`)
+const supabase25 = createClient(supabaseUrl25, supabaseKey25, { auth: { persistSession: false } })
+console.log('Connected!')
+
 const EDITIONS = fs.readdirSync('./private').filter((file) => {
   return fs.statSync(path.join('./private', file)).isDirectory()
 })
@@ -67,6 +73,7 @@ const MICROCURSOS_DOS_DIAS_24 = [
   'Herramientas para el análisis en metabolómica y el estudio de la función cognitiva y la plasticidad cerebral en modelos animales',
   'Aplicación de la Biología Molecular a la Medicina de Precisión'
 ]
+const MICROCURSOS_DOS_DIAS_25 = ['']
 
 const microRegEx = /^Microcurso "([\w\sáóéíú:(),¿?.ñ¡!\-\/“”–]+)"$/m
 
@@ -143,7 +150,14 @@ async function checkAttendance(
   edition: string,
   id: string
 ): Promise<{ sessions: Attendance[]; percent: number } | null> {
-  const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null
+  const supabase =
+    edition === 'ceebi-ii'
+      ? supabase23
+      : edition === 'ceebi-iii'
+        ? supabase24
+        : edition === 'ceebi-iv'
+          ? supabase25
+          : null
   if (!supabase) {
     console.error(`Edition "${edition}" not found!`)
     return null
@@ -188,11 +202,13 @@ async function checkMicro(edition: string, id: string): Promise<string[] | null>
   }
 
   const MICROCURSOS_DOS_DIAS =
-    edition === 'ceebi-iii'
-      ? MICROCURSOS_DOS_DIAS_24
-      : edition === 'ceebi-ii'
-        ? MICROCURSOS_DOS_DIAS_23
-        : []
+    edition === 'ceebi-iv'
+      ? MICROCURSOS_DOS_DIAS_25
+      : edition === 'ceebi-iii'
+        ? MICROCURSOS_DOS_DIAS_24
+        : edition === 'ceebi-ii'
+          ? MICROCURSOS_DOS_DIAS_23
+          : []
 
   const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json')
 
