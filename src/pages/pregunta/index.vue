@@ -122,8 +122,8 @@ import type { Database } from '@/supabase-types'
 import { IconThumbUpFilled, IconThumbUp, IconAlertCircle, IconEyeOff } from '@tabler/icons-vue'
 
 const supabase = createClient<Database>(
-  import.meta.env.SUPABASE_URL_2024,
-  import.meta.env.SUPABASE_KEY_2024,
+  import.meta.env.SUPABASE_URL_2025,
+  import.meta.env.SUPABASE_KEY_2025,
   { auth: { persistSession: false } }
 )
 const router = useRouter()
