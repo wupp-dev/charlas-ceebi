@@ -218,6 +218,7 @@ async function checkAttendance(
     return null
   }
   const { data: fileURL } = await supabase.storage.from('config').getPublicUrl('attendance.json')
+  console.log(`Fetching attendance schema from ${fileURL.publicUrl}...`)
 
   const res = await fetch(fileURL.publicUrl)
   const attendanceSchema = await res.json()
@@ -250,7 +251,14 @@ async function checkAttendance(
 }
 
 async function checkMicro(edition: string, id: string): Promise<string[] | null> {
-  const supabase = edition === 'ceebi-ii' ? supabase23 : edition === 'ceebi-iii' ? supabase24 : null
+  const supabase =
+    edition === 'ceebi-ii'
+      ? supabase23
+      : edition === 'ceebi-iii'
+        ? supabase24
+        : edition === 'ceebi-iv'
+          ? supabase25
+          : null
   if (!supabase) {
     console.error(`Edition "${edition}" not found!`)
     return null
