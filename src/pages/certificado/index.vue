@@ -432,10 +432,10 @@ const hoursDone = computed(
     (editionsStore.selected === 'ceebi-iii' && results.value.asistencia.percent > 0 ? 0.5 : 0)
 )
 
-const available = ref(isAfter(new Date(), new Date(2025, 6, 18, 19, 35)))
+const available = ref(true)
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
->(() => true)
+>(() => isAfter(new Date(), new Date(2025, 6, 18, 19, 35)))
 const notAvailableTxt = ref('Certificados aún no disponibles')
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
