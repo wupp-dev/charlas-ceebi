@@ -381,6 +381,7 @@ import { message } from 'ant-design-vue'
 import { useEditionsStore } from '@/stores/editions'
 import { useUserStore } from '@/stores/user'
 import { IconLogout2, IconReload, IconDownload, IconCalendarCheck } from '@tabler/icons-vue'
+import { isAfter } from 'date-fns'
 
 interface FormState {
   nif: string
@@ -431,11 +432,11 @@ const hoursDone = computed(
     (editionsStore.selected === 'ceebi-iii' && results.value.asistencia.percent > 0 ? 0.5 : 0)
 )
 
-const available = ref(true)
+const available = ref(isAfter(new Date(), new Date(2025, 6, 18, 19, 35)))
 const downloadable = computed<
   boolean | { asistencia: boolean; microcursos: boolean; poster: boolean }
 >(() => true)
-const notAvailableTxt = ref(null) // 'Los certificados para los asistentes online aun no están disponibles.')
+const notAvailableTxt = ref('Certificados aún no disponibles')
 const editionsStore = useEditionsStore()
 const usersStore = useUserStore()
 const loading = ref(false)
